@@ -34,23 +34,54 @@ export class App extends SampleBase {
       { field: "C7", label: "C7", type: "string" },
       { field: "C8", label: "C8", type: "string" },
     ];
-    this.importRules = {
-      // 'condition': 'and',
-      // 'rules': [{
-      //         'label': 'EmployeeID',
-      //         'field': 'EmployeeID',
-      //         'type': 'number',
-      //         'operator': 'equal',
-      //         'value': 1
-      //     },
-      //     {
-      //         'label': 'Title',
-      //         'field': 'Title',
-      //         'type': 'string',
-      //         'operator': 'equal',
-      //         'value': 'Sales Manager'
-      //     }]
-    };
+    this.importRules =  {
+      "condition": "and",
+      "rules": [
+          {
+              "label": "C1",
+              "field": "C1",
+              "operator": "startswith",
+              "type": "string",
+              "value": "Name"
+          },
+          {
+              "condition": "or",
+              "rules": [
+                  {
+                      "condition": "and",
+                      "rules": [
+                          {
+                              "label": "C2",
+                              "field": "C2",
+                              "operator": "startswith",
+                              "type": "string",
+                              "value": "Name"
+                          },
+                          {
+                              "label": "C3",
+                              "field": "C3",
+                              "operator": "startswith",
+                              "type": "string",
+                              "value": "name"
+                          }
+                      ]
+                  },
+                  {
+                      "condition": "and",
+                      "rules": [
+                          {
+                              "label": "C4",
+                              "field": "C4",
+                              "operator": "startswith",
+                              "type": "string",
+                              "value": "Name11"
+                          }
+                      ]
+                  }
+              ]
+          }
+      ]
+  }
   }
   createdControl() {
     console.log(
