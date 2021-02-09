@@ -23,7 +23,7 @@ const InitialConfig = AntdConfig; // or MaterialConfig or BasicConfig
 const config = {
   ...InitialConfig,
   fields: {
-    c1: {
+    $c1: {
       label2: "c1", //only for menu's toggler
       type: "text",
       excludeOperators: ["proximity"],
@@ -37,17 +37,17 @@ const config = {
         },
       },
     },
-    c2: {
-      label2: "c2", //only for menu's toggler
+    "$c2": {
+      label: "c2", //only for menu's toggler
       type: "text",
       excludeOperators: ["proximity"],
     },
-    c3: {
-      label2: "c3", //only for menu's toggler
+    $c3: {
+      label: "c3", //only for menu's toggler
       type: "text",
     },
-    c4: {
-      label2: "c4", //only for menu's toggler
+    $c4: {
+      label: "c4", //only for menu's toggler
       type: "text",
     },
     c5: {
@@ -74,8 +74,8 @@ export default class DemoQueryBuilder extends Component {
     elseString: null,
     ifMessage: null,
     elseMessage: null,
-    ifAction: "VIOLATE",
-    elseAction: "CONTINUE",
+    ifAction: "VIOLATION",
+    elseAction: "OUTPUT",
     finalOutput: null,
   };
 
@@ -90,8 +90,8 @@ export default class DemoQueryBuilder extends Component {
         />
         <div style={{ display: "flex", justifyContent: "space-around" }}>
           <select name="action" id="action">
-            <option value="Violate">Violate</option>
-            <option value="Continue">Continue</option>
+          <option value="OUTPUT">OUTPUT</option>
+              <option value="VIOLATION">VIOLATION</option>
           </select>
           <input
             placeholder="Message"
@@ -115,8 +115,8 @@ export default class DemoQueryBuilder extends Component {
           />
           <div style={{ display: "flex", justifyContent: "space-around" }}>
             <select name="action" id="action">
-              <option value="Continue">Continue</option>
-              <option value="Violate">Violate</option>
+              <option value="OUTPUT">OUTPUT</option>
+              <option value="VIOLATION">VIOLATION</option>
             </select>
             <input
               placeholder="Message"
@@ -149,14 +149,14 @@ export default class DemoQueryBuilder extends Component {
       QbUtils.queryString(this.state.elseTree, this.state.config)
     );
 
-    let finalDSL = "CONDITION IF (";
+    let finalDSL = "CONDITION condition_1 BEGIN IF (";
     finalDSL =
       finalDSL +
       ifCondtion +
       " ) BEGIN RETURN " +
       this.state.ifAction +
       " " +
-      this.state.ifMessage +
+      `"${this.state.ifMessage}"` + 
       " END ";
     finalDSL =
       finalDSL +
@@ -165,12 +165,18 @@ export default class DemoQueryBuilder extends Component {
       " ) BEGIN RETURN " +
       this.state.elseAction +
       " " +
-      this.state.elseMessage +
+      `"${this.state.elseMessage}"` +
       " END ";
     finalDSL = finalDSL + "END";
 
-    finalDSL = finalDSL.replace("&&", "and");
-    finalDSL = finalDSL.replace("||", "or");
+    finalDSL = finalDSL.replace(/\&&/g, "and");
+    finalDSL = finalDSL.replace(/\|\|/g, "or");
+
+    finalDSL = finalDSL.replace(/[\\]/g, "")
+    finalDSL = finalDSL.replace(/\("/g, "(")
+    finalDSL = finalDSL.replace(/\" \)/g, ")")
+
+
     // finalDSL  = finalDSL.replace("\"", "");
     this.setState({ finalOutput: finalDSL });
     console.log(finalDSL);
