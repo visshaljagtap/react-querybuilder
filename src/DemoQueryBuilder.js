@@ -15,6 +15,7 @@ import "react-awesome-query-builder/css/antd.less"; // or import "antd/dist/antd
 
 import "react-awesome-query-builder/lib/css/styles.css";
 import "react-awesome-query-builder/lib/css/compact_styles.css"; //optional, for more compact styles
+import { Divider } from "antd";
 
 const InitialConfig = AntdConfig; // or MaterialConfig or BasicConfig
 
@@ -75,7 +76,7 @@ export default class DemoQueryBuilder extends Component {
     elseMessage: null,
     ifAction: "VIOLATE",
     elseAction: "CONTINUE",
-    finalOutput: null
+    finalOutput: null,
   };
 
   render = () => (
@@ -92,7 +93,10 @@ export default class DemoQueryBuilder extends Component {
             <option value="Violate">Violate</option>
             <option value="Continue">Continue</option>
           </select>
-          <input placeholder="Message" onChange={(e)=> this.setState({ifMessage: e.target.value})}/>
+          <input
+            placeholder="Message"
+            onChange={(e) => this.setState({ ifMessage: e.target.value })}
+          />
           <button onClick={() => this.setState({ else: true })}>
             Add Else Condition
           </button>
@@ -102,6 +106,7 @@ export default class DemoQueryBuilder extends Component {
 
       {this.state.else && (
         <div>
+          <Divider>ELSE</Divider>
           <Query
             {...config}
             value={this.state.elseTree}
@@ -109,16 +114,19 @@ export default class DemoQueryBuilder extends Component {
             renderBuilder={this.renderBuilder}
           />
           <div style={{ display: "flex", justifyContent: "space-around" }}>
-          <select name="action" id="action">
-             <option value="Continue">Continue</option>
-            <option value="Violate">Violate</option>
-          </select>
-            <input placeholder="Message" onChange={(e)=> this.setState({elseMessage: e.target.value})}/>
+            <select name="action" id="action">
+              <option value="Continue">Continue</option>
+              <option value="Violate">Violate</option>
+            </select>
+            <input
+              placeholder="Message"
+              onChange={(e) => this.setState({ elseMessage: e.target.value })}
+            />
             <button onClick={this.generateDSL}>Submit</button>
           </div>
-         <div>
-           {this.state.finalOutput}
-         </div>
+          <div style={{ marginTop: 20, marginLeft: 30 }}>
+            <b>{this.state.finalOutput}</b>
+          </div>
         </div>
       )}
     </>
@@ -134,25 +142,39 @@ export default class DemoQueryBuilder extends Component {
     //   ),this.state.elseAction, this.state.elseMessage
     // );
 
-    let ifCondtion = JSON.stringify(QbUtils.queryString(this.state.tree, this.state.config))
-    let elseCondtion = JSON.stringify(QbUtils.queryString(this.state.elseTree, this.state.config))
+    let ifCondtion = JSON.stringify(
+      QbUtils.queryString(this.state.tree, this.state.config)
+    );
+    let elseCondtion = JSON.stringify(
+      QbUtils.queryString(this.state.elseTree, this.state.config)
+    );
 
+    let finalDSL = "CONDITION IF (";
+    finalDSL =
+      finalDSL +
+      ifCondtion +
+      " ) BEGIN RETURN " +
+      this.state.ifAction +
+      " " +
+      this.state.ifMessage +
+      " END ";
+    finalDSL =
+      finalDSL +
+      "ELIF (" +
+      elseCondtion +
+      " ) BEGIN RETURN " +
+      this.state.elseAction +
+      " " +
+      this.state.elseMessage +
+      " END ";
+    finalDSL = finalDSL + "END";
 
-
-
-        let finalDSL = "CONDITION IF ("
-        finalDSL = finalDSL + ifCondtion + " ) BEGIN RETURN " + this.state.ifAction + " " + this.state.ifMessage + " END "
-        finalDSL = finalDSL + "ELIF (" + elseCondtion + " ) BEGIN RETURN " + this.state.elseAction + " " + this.state.elseMessage + " END "
-        finalDSL = finalDSL + "END"
-
-       
-        finalDSL = finalDSL.replace("&&", "and");
-        finalDSL = finalDSL.replace("||", "or");
-        // finalDSL  = finalDSL.replace("\"", "");
-        console.log(finalDSL);
-
+    finalDSL = finalDSL.replace("&&", "and");
+    finalDSL = finalDSL.replace("||", "or");
+    // finalDSL  = finalDSL.replace("\"", "");
+    this.setState({ finalOutput: finalDSL });
+    console.log(finalDSL);
   };
-
 
   renderBuilder = (props) => (
     <div className="query-builder-container" style={{ padding: "10px" }}>
