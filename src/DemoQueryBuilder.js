@@ -23,6 +23,9 @@ const config = {
   // settings: {
   //   showNot: false
   // },
+  Settings:{
+    showNot: true
+  },
   fields: {
     $c1: {
       label: "show command", //only for menu's toggler
