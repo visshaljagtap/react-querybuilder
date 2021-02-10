@@ -6,45 +6,47 @@ import {
   Utils as QbUtils,
 } from "react-awesome-query-builder";
 
-// For AntDesign widgets only:
-import AntdConfig from "react-awesome-query-builder/lib/config/antd";
-import "react-awesome-query-builder/css/antd.less"; // or import "antd/dist/antd.css";
+import { TextField, Button, MenuItem } from "@material-ui/core";
+
 // For Material-UI widgets only:
-// import MaterialConfig from 'react-awesome-query-builder/lib/config/material';
+import MaterialConfig from "react-awesome-query-builder/lib/config/material";
 // Choose your skin (ant/material/vanilla):
 
 import "react-awesome-query-builder/lib/css/styles.css";
 import "react-awesome-query-builder/lib/css/compact_styles.css"; //optional, for more compact styles
-import { Divider } from "antd";
 
-const InitialConfig = AntdConfig; // or MaterialConfig or BasicConfig
+const InitialConfig = MaterialConfig; // or MaterialConfig or BasicConfig
 
 // You need to provide your own config. See below 'Config format'
 const config = {
   ...InitialConfig,
+  // settings: {
+  //   showNot: false
+  // },
   fields: {
     $c1: {
-      label2: "c1", //only for menu's toggler
+      label: "show command", //only for menu's toggler
       type: "text",
       excludeOperators: ["proximity"],
-      mainWidgetProps: {
-        valueLabel: "Name",
-        valuePlaceholder: "Enter name",
-      },
-      fieldSettings: {
-        validateValue: (val, fieldSettings) => {
-          return val.length < 10;
-        },
-      },
+      operators: ['equal', "like", "not_like",
+      "starts_with",
+      "ends_with", "regex"],
+      defaultOperator: 'like',
     },
-    "$c2": {
-      label: "c2", //only for menu's toggler
+    $c2: {
+      label: "Show cdp neighbours", //only for menu's toggler
       type: "text",
+      defaultOperator: 'like',
+      operators: ['equal', "like", "not_like",
+      "starts_with",
+      "ends_with"],
       excludeOperators: ["proximity"],
     },
     $c3: {
       label: "c3", //only for menu's toggler
       type: "text",
+      excludeOperators: ["proximity"],
+
     },
     $c4: {
       label: "c4", //only for menu's toggler
@@ -61,6 +63,10 @@ const config = {
   },
 };
 
+// config.settings({
+//   showNot: true
+// })
+
 // You can load query value from your backend storage (for saving see `Query.onChange()`)
 const queryValue = { id: QbUtils.uuid(), type: "group" };
 
@@ -75,38 +81,65 @@ export default class DemoQueryBuilder extends Component {
     ifMessage: null,
     elseMessage: null,
     ifAction: "VIOLATION",
-    elseAction: "OUTPUT",
+    elseAction: "VIOLATION",
     finalOutput: null,
   };
 
   render = () => (
     <>
       <div>
+      <div style={{ textAlign: "center", fontWeight: "bold" , marginTop: 20}}>
+          IF Condition
+        </div>
         <Query
           {...config}
           value={this.state.tree}
           onChange={this.onChange}
           renderBuilder={this.renderBuilder}
         />
-        <div style={{ display: "flex", justifyContent: "space-around" }}>
-          <select name="action" id="action">
-          <option value="OUTPUT">OUTPUT</option>
-              <option value="VIOLATION">VIOLATION</option>
-          </select>
-          <input
-            placeholder="Message"
+      { QbUtils.queryString(this.state.tree, this.state.config) && <div style={{ display: "flex", justifyContent: "space-around" }}>
+          <TextField
+            id="outlined-select-currency-native"
+            select
+            label="Select Action"
+            // value={}
+            value={"VIOLATION"}
+            // onChange={handleChange}
+            SelectProps={{
+              native: true,
+            }}
+            size="small"
+            // helperText="Please Select Action"
+            variant="outlined"
+          >
+            <option value="OUTPUT">OUTPUT</option>
+            <option value="VIOLATION">VIOLATION</option>
+          </TextField>
+          <TextField
+            size="small"
             onChange={(e) => this.setState({ ifMessage: e.target.value })}
+            id="filled-basic"
+            label="Message"
+            variant="outlined"
           />
-          <button onClick={() => this.setState({ else: true })}>
+
+          <Button
+            size="small"
+            variant="contained"
+            color="primary"
+            onClick={() => this.setState({ else: true })}
+          >
             Add Else Condition
-          </button>
-        </div>
+          </Button>
+        </div>}
         {/* {this.renderResult(this.state)} */}
       </div>
 
       {this.state.else && (
         <div>
-          <Divider>ELSE</Divider>
+          <div style={{ textAlign: "center", fontWeight: "bold" , marginTop: 20}}>
+            Else Condition
+          </div>
           <Query
             {...config}
             value={this.state.elseTree}
@@ -114,15 +147,41 @@ export default class DemoQueryBuilder extends Component {
             renderBuilder={this.renderBuilder}
           />
           <div style={{ display: "flex", justifyContent: "space-around" }}>
-            <select name="action" id="action">
+            <TextField
+              id="outlined-select-currency-native"
+              select
+              label="Select Action"
+              value={"VIOLATION"}
+              // onChange={handleChange}
+              SelectProps={{
+                native: true,
+              }}
+              size="small"
+              // helperText="Please Select Action"
+              variant="outlined"
+            >
               <option value="OUTPUT">OUTPUT</option>
               <option value="VIOLATION">VIOLATION</option>
-            </select>
-            <input
-              placeholder="Message"
-              onChange={(e) => this.setState({ elseMessage: e.target.value })}
-            />
-            <button onClick={this.generateDSL}>Submit</button>
+            </TextField>
+
+            <div style={{ fontSize: 12 }}>
+              <TextField
+                size="small"
+                onChange={(e) => this.setState({ elseMessage: e.target.value })}
+                id="filled-basic"
+                label="Message"
+                variant="outlined"
+              />
+            </div>
+
+            <Button
+              size="small"
+              variant="contained"
+              color="primary"
+              onClick={this.generateDSL}
+            >
+              Submit
+            </Button>
           </div>
           <div style={{ marginTop: 20, marginLeft: 30 }}>
             <b>{this.state.finalOutput}</b>
@@ -149,6 +208,20 @@ export default class DemoQueryBuilder extends Component {
       QbUtils.queryString(this.state.elseTree, this.state.config)
     );
 
+    let elseStatement
+    let finalElse = ""
+    
+    if(elseCondtion) {
+      elseStatement =  "ELIF (" +
+      elseCondtion +
+      " ) BEGIN RETURN "
+
+      finalElse = " ELSE BEGIN OUTPUT '' END "
+    }
+    else {
+      elseStatement =  "ELSE BEGIN "
+    }
+    
     let finalDSL = "CONDITION condition_1 BEGIN IF (";
     finalDSL =
       finalDSL +
@@ -156,26 +229,23 @@ export default class DemoQueryBuilder extends Component {
       " ) BEGIN RETURN " +
       this.state.ifAction +
       " " +
-      `"${this.state.ifMessage}"` + 
+      `"${this.state.ifMessage}"` +
       " END ";
     finalDSL =
       finalDSL +
-      "ELIF (" +
-      elseCondtion +
-      " ) BEGIN RETURN " +
+     elseStatement +
       this.state.elseAction +
       " " +
       `"${this.state.elseMessage}"` +
       " END ";
-    finalDSL = finalDSL + "END";
+    finalDSL = finalDSL + finalElse +  "END";
 
     finalDSL = finalDSL.replace(/\&&/g, "and");
     finalDSL = finalDSL.replace(/\|\|/g, "or");
 
-    finalDSL = finalDSL.replace(/[\\]/g, "")
-    finalDSL = finalDSL.replace(/\("/g, "(")
-    finalDSL = finalDSL.replace(/\" \)/g, ")")
-
+    finalDSL = finalDSL.replace(/[\\]/g, "");
+    finalDSL = finalDSL.replace(/\("/g, "(");
+    finalDSL = finalDSL.replace(/\" \)/g, ")");
 
     // finalDSL  = finalDSL.replace("\"", "");
     this.setState({ finalOutput: finalDSL });
@@ -183,7 +253,7 @@ export default class DemoQueryBuilder extends Component {
   };
 
   renderBuilder = (props) => (
-    <div className="query-builder-container" style={{ padding: "10px" }}>
+    <div className="query-builder-container">
       <div className="query-builder qb-lite">
         <Builder {...props} />
       </div>
@@ -204,6 +274,8 @@ export default class DemoQueryBuilder extends Component {
 
   onChange = (immutableTree, config) => {
     // Tip: for better performance you can apply `throttle` - see `examples/demo`
+  console.log('----', QbUtils.queryString(this.state.tree, this.state.config));
+
     this.setState({ tree: immutableTree, config: config });
 
     // const jsonTree = QbUtils.getTree(immutableTree);

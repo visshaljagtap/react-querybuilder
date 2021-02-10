@@ -1,7 +1,6 @@
 import * as React from "react";
 import { SampleBase } from "./sample-base";
 import  DemoQueryBuilder from './DemoQueryBuilder';
-import "antd/dist/antd.css";
 
 // import './default.css';
 export class App extends SampleBase {
