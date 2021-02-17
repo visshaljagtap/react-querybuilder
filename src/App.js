@@ -6,7 +6,7 @@ import  DemoQueryBuilder from './DemoQueryBuilder';
 export class App extends SampleBase {
   render() {
     return (
-     <div style={{width:"50%"}}><DemoQueryBuilder /></div>
+     <div style={{width:"70%"}}><DemoQueryBuilder /></div>
     );
   }
 }
