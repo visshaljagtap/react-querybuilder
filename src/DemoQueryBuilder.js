@@ -108,7 +108,11 @@ export default class DemoQueryBuilder extends Component {
     elseAction: "VIOLATION",
     finalElseAction: "OUTPUT",
     finalOutput: null,
-    elseIfBlocks: [1],
+    elseIfBlocks: [
+      {
+        elseTree: QbUtils.checkTree(QbUtils.loadTree(queryValue), config),
+      },
+    ],
   };
 
   handleChange = (event) => {
@@ -117,7 +121,9 @@ export default class DemoQueryBuilder extends Component {
       this.setState({
         elseIfBlocks: [
           ...this.state.elseIfBlocks,
-          this.state.elseIfBlocks.length + 1,
+          {
+            elseTree: QbUtils.checkTree(QbUtils.loadTree(queryValue), config),
+          },
         ],
       });
     }
@@ -132,22 +138,23 @@ export default class DemoQueryBuilder extends Component {
           return (
             <div key={index}>
               <div
-                style={{ textAlign: "left", fontWeight: "bold", marginTop: 20 }}
+                style={{ textAlign: "left", fontWeight: "bold", marginTop: 20, fontSize: 10 }}
               >
                 {title}
               </div>
               <Query
                 {...config}
-                value={this.state.tree}
+                value={value.elseTree}
                 onChange={this.onChange}
                 renderBuilder={this.renderBuilder}
               />
-              {QbUtils.queryString(this.state.tree, this.state.config) && (
+              {/* {QbUtils.queryString(this.state.tree, this.state.config) && ( */}
                 <div
                   style={{
                     display: "flex",
                     justifyContent: "space-around",
                     alignItems: "center",
+                    fontSize: 10
                   }}
                 >
                   <TextField
@@ -160,12 +167,13 @@ export default class DemoQueryBuilder extends Component {
                     SelectProps={{
                       native: true,
                     }}
+                    
                     size="small"
                     // helperText="Please Select Action"
                     variant="outlined"
                   >
-                    <option value="OUTPUT">OUTPUT</option>
-                    <option value="VIOLATION">VIOLATION</option>
+                    <option style={{fontSize: 10}} value="OUTPUT">OUTPUT</option>
+                    <option style={{fontSize: 10}} value="VIOLATION">VIOLATION</option>
                   </TextField>
                   <TextField
                     size="small"
@@ -174,6 +182,7 @@ export default class DemoQueryBuilder extends Component {
                     }
                     id="filled-basic"
                     label="Message"
+                    style={{fontSize: 10}}
                     variant="outlined"
                   />
 
@@ -186,27 +195,28 @@ export default class DemoQueryBuilder extends Component {
               + Add Else If Condition
             </Button>} */}
 
-                  {!this.state.else && (
-                    <FormControl style={{ width: 200 }}>
-                      <InputLabel id="demo-simple-select-label">
-                        Please Select
-                      </InputLabel>
+                  <FormControl style={{ width: 200 }} size="small">
+              
+                    <InputLabel style={{fontSize: 10}} id="demo-simple-select-label">
+                      Please Select
+                    </InputLabel>
 
-                      <Select
-                        labelId="demo-simple-select-label"
-                        id="demo-simple-select"
-                        // value={age}
-                        defaultValue={""}
-                        onChange={this.handleChange}
-                      >
-                        <MenuItem value={""}>Please select</MenuItem>
-                        <MenuItem value={"ifElse"}>Add Nested If Else</MenuItem>
-                        <MenuItem value={"elseIf"}>Add Else If</MenuItem>
-                      </Select>
-                    </FormControl>
-                  )}
+                    <Select
+                      labelId="demo-simple-select-label"
+                      id="demo-simple-select"
+                      // value={age}
+                      defaultValue={""}
+              // style={{fontSize: 10}}
+              
+
+                      onChange={this.handleChange}
+                    >
+                      <MenuItem value={"ifElse"}>Add Nested If Else</MenuItem>
+                      <MenuItem value={"elseIf"}>Add Else If</MenuItem>
+                    </Select>
+                  </FormControl>
                 </div>
-              )}
+              {/* )} */}
               {/* {this.renderResult(this.state)} */}
             </div>
           );
@@ -258,7 +268,8 @@ export default class DemoQueryBuilder extends Component {
         </div>
       )} */}
 
-      {QbUtils.queryString(this.state.tree, this.state.config) && (
+      {/* {QbUtils.queryString(this.state.tree, this.state.config) && ( */}
+      {true && (
         <div>
           <div
             style={{
@@ -266,6 +277,7 @@ export default class DemoQueryBuilder extends Component {
               fontWeight: "bold",
               marginTop: 20,
               marginBottom: 20,
+              fontSize: 10
             }}
           >
             Else Condition
@@ -276,6 +288,7 @@ export default class DemoQueryBuilder extends Component {
               select
               label="Select Action"
               value={"VIOLATION"}
+              style={{fontSize: 10}}
               // onChange={handleChange}
               SelectProps={{
                 native: true,

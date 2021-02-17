@@ -30,3 +30,7 @@ code {
   overflow: visible !important;
   opacity: 1;
 }
+
+span, input, .MuiButton-label, .MuiSelect-select, li {
+  font-size: 12px !important;
+}
