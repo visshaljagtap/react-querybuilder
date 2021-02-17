@@ -6,7 +6,15 @@ import {
   Utils as QbUtils,
 } from "react-awesome-query-builder";
 
-import { TextField, Button, MenuItem } from "@material-ui/core";
+import {
+  TextField,
+  Button,
+  Select,
+  MenuItem,
+  InputLabel,
+  FormControl,
+} from "@material-ui/core";
+import { makeStyles } from "@material-ui/core/styles";
 
 // For Material-UI widgets only:
 import MaterialConfig from "react-awesome-query-builder/lib/config/material";
@@ -23,8 +31,8 @@ const config = {
   // settings: {
   //   showNot: false
   // },
-  Settings:{
-    showNot: true
+  Settings: {
+    showNot: true,
   },
   fields: {
     $c1: {
@@ -68,6 +76,16 @@ const config = {
   },
 };
 
+const useStyles = makeStyles((theme) => ({
+  formControl: {
+    margin: theme.spacing(1),
+    minWidth: 200,
+  },
+  selectEmpty: {
+    marginTop: theme.spacing(2),
+  },
+}));
+
 // config.settings({
 //   showNot: true
 // })
@@ -90,61 +108,111 @@ export default class DemoQueryBuilder extends Component {
     elseAction: "VIOLATION",
     finalElseAction: "OUTPUT",
     finalOutput: null,
+    elseIfBlocks: [1],
+  };
+
+  handleChange = (event) => {
+    let value = event.target.value;
+    if (value == "elseIf") {
+      this.setState({
+        elseIfBlocks: [
+          ...this.state.elseIfBlocks,
+          this.state.elseIfBlocks.length + 1,
+        ],
+      });
+    }
+    // this.setState({ else: true });
   };
 
   render = () => (
     <div style={{ marginLeft: 20 }}>
-      <div>
-        <div style={{ textAlign: "left", fontWeight: "bold", marginTop: 20 }}>
-          IF Condition
-        </div>
-        <Query
-          {...config}
-          value={this.state.tree}
-          onChange={this.onChange}
-          renderBuilder={this.renderBuilder}
-        />
-        {QbUtils.queryString(this.state.tree, this.state.config) && (
-          <div style={{ display: "flex", justifyContent: "space-around" }}>
-            <TextField
-              id="outlined-select-currency-native"
-              select
-              label="Select Action"
-              // value={}
-              value={"VIOLATION"}
-              // onChange={handleChange}
-              SelectProps={{
-                native: true,
-              }}
-              size="small"
-              // helperText="Please Select Action"
-              variant="outlined"
-            >
-              <option value="OUTPUT">OUTPUT</option>
-              <option value="VIOLATION">VIOLATION</option>
-            </TextField>
-            <TextField
-              size="small"
-              onChange={(e) => this.setState({ ifMessage: e.target.value })}
-              id="filled-basic"
-              label="Message"
-              variant="outlined"
-            />
+      {this.state.elseIfBlocks &&
+        this.state.elseIfBlocks.map((value, index) => {
+          let title = index === 0 ? "If Condition" : "Else If Condition";
+          return (
+            <div key={index}>
+              <div
+                style={{ textAlign: "left", fontWeight: "bold", marginTop: 20 }}
+              >
+                {title}
+              </div>
+              <Query
+                {...config}
+                value={this.state.tree}
+                onChange={this.onChange}
+                renderBuilder={this.renderBuilder}
+              />
+              {QbUtils.queryString(this.state.tree, this.state.config) && (
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-around",
+                    alignItems: "center",
+                  }}
+                >
+                  <TextField
+                    id="outlined-select-currency-native"
+                    select
+                    label="Select Action"
+                    // value={}
+                    value={"VIOLATION"}
+                    // onChange={handleChange}
+                    SelectProps={{
+                      native: true,
+                    }}
+                    size="small"
+                    // helperText="Please Select Action"
+                    variant="outlined"
+                  >
+                    <option value="OUTPUT">OUTPUT</option>
+                    <option value="VIOLATION">VIOLATION</option>
+                  </TextField>
+                  <TextField
+                    size="small"
+                    onChange={(e) =>
+                      this.setState({ ifMessage: e.target.value })
+                    }
+                    id="filled-basic"
+                    label="Message"
+                    variant="outlined"
+                  />
 
-          {!this.state.else &&  <Button
+                  {/* {!this.state.else &&  <Button
               size="small"
               variant="contained"
               // color="primary"
               onClick={() => this.setState({ else: true })}
             >
               + Add Else If Condition
-            </Button>}
-          </div>
-        )}
-        {/* {this.renderResult(this.state)} */}
-      </div>
+            </Button>} */}
 
-      {this.state.else && (
+                  {!this.state.else && (
+                    <FormControl style={{ width: 200 }}>
+                      <InputLabel id="demo-simple-select-label">
+                        Please Select
+                      </InputLabel>
+
+                      <Select
+                        labelId="demo-simple-select-label"
+                        id="demo-simple-select"
+                        // value={age}
+                        defaultValue={""}
+                        onChange={this.handleChange}
+                      >
+                        <MenuItem value={""}>Please select</MenuItem>
+                        <MenuItem value={"ifElse"}>Add Nested If Else</MenuItem>
+                        <MenuItem value={"elseIf"}>Add Else If</MenuItem>
+                      </Select>
+                    </FormControl>
+                  )}
+                </div>
+              )}
+              {/* {this.renderResult(this.state)} */}
+            </div>
+          );
+        })}
+
+      {/* {this.state.else && (
         <div>
           <div style={{ textAlign: "left", fontWeight: "bold", marginTop: 20 }}>
             Else If Condition
@@ -188,7 +256,7 @@ export default class DemoQueryBuilder extends Component {
             </div>
           )}
         </div>
-      )}
+      )} */}
 
       {QbUtils.queryString(this.state.tree, this.state.config) && (
         <div>
@@ -267,7 +335,7 @@ export default class DemoQueryBuilder extends Component {
       QbUtils.queryString(this.state.elseTree, this.state.config)
     );
 
-    let elseStatement = " "
+    let elseStatement = " ";
     let finalElse =
       "ELSE BEGIN " +
       this.state.finalElseAction +
