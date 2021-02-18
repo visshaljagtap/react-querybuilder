@@ -278,6 +278,7 @@ export default class DemoQueryBuilder extends Component {
                     justifyContent: "space-around",
                     alignItems: "center",
                     fontSize: 10,
+                    marginTop:10
                   }}
                 >
                   <TextField
@@ -309,6 +310,16 @@ export default class DemoQueryBuilder extends Component {
                     id="filled-basic"
                     label="Message"
                     style={{ fontSize: 10 }}
+                    variant="outlined"
+                  />
+                   <TextField
+                    size="small"
+                    // onChange={(e) =>
+                    //   this.setState({ ifMessage: e.target.value })
+                    // }
+                    id="filled-basic"
+                    label="Save Output Variable"
+                    style={{fontSize: 10}}
                     variant="outlined"
                   />
 
