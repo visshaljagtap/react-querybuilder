@@ -266,8 +266,8 @@ export default class DemoQueryBuilder extends Component {
         return json;
       }
 
-      if (newJson.ifStatement.id == id) {
-        newJson.ifStatement.conditionBlocks.ifStatement = newObj;
+      if (newJson.ifStatement.id == id && name == "ifElse") {
+        newJson.ifStatement.conditionBlocks.push( newObj);
         return json;
       }
 
@@ -316,7 +316,7 @@ export default class DemoQueryBuilder extends Component {
 
     console.log('-----this.state.conditionBlocks- nesting', name, id);
     // create new object
-    let json = this.state.conditionBlocks;
+    // let json = this.state.conditionBlocks;
 
     let newObj;
     if (name === "elseIf") {
@@ -326,7 +326,7 @@ export default class DemoQueryBuilder extends Component {
         actionType: "String",
         actionMessage: "String",
         cliFix: "string",
-        conditionBlocks: null,
+        conditionBlocks: [],
       };
     } else if (name === "ifElse") {
       newObj = {
@@ -337,14 +337,14 @@ export default class DemoQueryBuilder extends Component {
           actionType: "String",
           actionMessage: "String",
           cliFix: "string",
-          conditionBlocks: null,
+          conditionBlocks: [],
         },
 
         elseStatement: {
           actionType: "String",
           actionMessage: "String",
           cliFix: "string",
-          conditionBlocks: null,
+          conditionBlocks: [],
         },
       };
     }
@@ -796,14 +796,22 @@ function ConditionBlock({ conditionBlock , hanldeNesting}) {
       <ElIfStatement statement={conditionBlock.elIfStatement} hanldeNesting={hanldeNesting} />
       <ElseStatement statement={conditionBlock.elseStatement} />
 
-      {nestedConditionBlock}
+      {/* {nestedConditionBlock} */}
     </div>
   );
 }
 
 function IfStatement({ statement, hanldeNesting, id }) {
-  console.log(hanldeNesting);
-  return   <div>
+  console.log(statement);
+  const nestedConditionBlock = (statement.conditionBlocks || []).map(
+    (condition) => {
+      return (
+        <ConditionBlock conditionBlock={condition} hanldeNesting={hanldeNesting} />
+      );
+    }
+  );
+
+  return <>  <div>
   <div
     style={{
       textAlign: "left",
@@ -869,7 +877,7 @@ function IfStatement({ statement, hanldeNesting, id }) {
       style={{ fontSize: 10 }}
       variant="outlined"
     />
-    <TextField
+    {/* <TextField
       size="small"
       // onChange={(e) =>
       //   this.setState({ ifMessage: e.target.value })
@@ -878,7 +886,7 @@ function IfStatement({ statement, hanldeNesting, id }) {
       label="Save Output Variable"
       style={{ fontSize: 10 }}
       variant="outlined"
-    />
+    /> */}
 
     <FormControl style={{ width: 200 }} size="small">
       <InputLabel
@@ -905,6 +913,8 @@ function IfStatement({ statement, hanldeNesting, id }) {
     </FormControl>
   </div>
 </div>
+{nestedConditionBlock}
+</>
 
 }
 
