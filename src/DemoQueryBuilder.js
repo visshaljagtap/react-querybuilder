@@ -95,6 +95,8 @@ const useStyles = makeStyles((theme) => ({
 const queryValue = { id: QbUtils.uuid(), type: "group" };
 
 const uniqueId = uuidv4();
+const uniqueId1 = uuidv4();
+const uniqueId2 = uuidv4();
 
 var conditionBlocks = [
   {
@@ -148,6 +150,7 @@ export default class DemoQueryBuilder extends Component {
       {
         id: uniqueId,
         ifStatement: {
+          id: uniqueId1,
           condition: QbUtils.checkTree(QbUtils.loadTree(queryValue), config),
           actionType: "String",
           actionMessage: "String",
@@ -226,6 +229,7 @@ export default class DemoQueryBuilder extends Component {
         {
           id: uuidv4(),
           ifStatement: {
+            id: uuidv4(),
             condition: QbUtils.checkTree(QbUtils.loadTree(queryValue), config),
             actionType: "String",
             actionMessage: "String",
@@ -289,7 +293,8 @@ export default class DemoQueryBuilder extends Component {
         newJson.ifStatement.conditionBlocks &&
         newJson.ifStatement.conditionBlocks.length > 0
       ) {
-        this.test(newJson.ifStatement.conditionBlocks, name, id);
+        newJson.ifStatement.conditionBlocks = this.test(newJson.ifStatement.conditionBlocks, name, id, newObj);
+        return json
       }
 
       if (newJson.elifStatement) {
@@ -298,16 +303,18 @@ export default class DemoQueryBuilder extends Component {
             newJson.elifStatement[i].conditionBlocks &&
             newJson.elifStatement[i].conditionBlocks.length > 0
           ) {
-            this.test(newJson.elifStatement[i].conditionBlocks, name, id);
+            newJson.elifStatement[i].conditionBlocks = this.test(newJson.elifStatement[i].conditionBlocks, name, id, newObj);
           }
         }
+        return json
       }
 
       if (
         newJson.elifStatement.conditionBlocks &&
         newJson.elifStatement.conditionBlocks.length > 0
       ) {
-        this.test(newJson.elifStatement.conditionBlocks, name, id);
+        newJson.elifStatement.conditionBlocks =  this.test(newJson.elifStatement.conditionBlocks, name, id, newObj);
+        return json
       }
     }
   };
@@ -330,15 +337,17 @@ export default class DemoQueryBuilder extends Component {
       };
     } else if (name === "ifElse") {
       newObj = {
+        id: uuidv4(),
         ifStatement: {
           id: uuidv4(),
-
           condition: QbUtils.checkTree(QbUtils.loadTree(queryValue), config),
           actionType: "String",
           actionMessage: "String",
           cliFix: "string",
           conditionBlocks: [],
         },
+
+        elifStatement:[],
 
         elseStatement: {
           actionType: "String",
