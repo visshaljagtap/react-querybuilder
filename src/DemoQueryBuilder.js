@@ -96,6 +96,34 @@ const queryValue = { id: QbUtils.uuid(), type: "group" };
 
 const uniqueId = uuidv4();
 
+var conditionBlocks = [
+  {
+    id: uuidv4(),
+    ifStatement: {
+      id: uuidv4(),
+      condition: QbUtils.checkTree(QbUtils.loadTree(queryValue), config),
+      actionType: "String",
+      actionMessage: "String",
+      cliFix: "string",
+      conditionBlocks: [],
+    },
+    elifStatement: [],
+    // {
+    //   condition: QbUtils.checkTree(QbUtils.loadTree(queryValue), config),
+    //   actionType: "String",
+    //   actionMessage: "String",
+    //   cliFix: "string",
+    //   conditionBlocks: null,
+    // },
+    elseStatement: {
+      actionType: "String",
+      actionMessage: "String",
+      cliFix: "string",
+      conditionBlocks: [],
+    },
+  },
+];
+
 export default class DemoQueryBuilder extends Component {
   state = {
     tree: QbUtils.checkTree(QbUtils.loadTree(queryValue), config),
@@ -124,7 +152,7 @@ export default class DemoQueryBuilder extends Component {
           actionType: "String",
           actionMessage: "String",
           cliFix: "string",
-          conditionBlocks: null,
+          conditionBlocks: [],
         },
         elifStatement: [],
         // {
@@ -138,7 +166,7 @@ export default class DemoQueryBuilder extends Component {
           actionType: "String",
           actionMessage: "String",
           cliFix: "string",
-          conditionBlocks: null,
+          conditionBlocks: [],
         },
       },
     ],
@@ -152,25 +180,46 @@ export default class DemoQueryBuilder extends Component {
     });
   };
 
-  deleteElifCondition = (conditionBlockID, elifiD) =>{
-    console.log('---', conditionBlockID, elifiD);
+  deleteElifCondition = (conditionBlockID, elifiD) => {
     let updatedBLock = this.state.conditionBlocks.map(function (block) {
       if (block.id == conditionBlockID) {
-    console.log('--cond match-', block);
-
-        block.elifStatement &&block.elifStatement.filter(function (elif) {
-    console.log('--elif match-', elif);
-
-          return elif.id !== elifiD;
-        })
+        block.elifStatement =
+          block.elifStatement &&
+          block.elifStatement.filter(function (elif) {
+            return elif.id !== elifiD;
+          });
       }
       return block;
     });
-    this.setState({ conditionBlocks: updatedBLock });
 
-  }
+    this.setState({ conditionBlocks: updatedBLock });
+  };
 
   addMoreIf = () => {
+    conditionBlocks.push({
+      id: uuidv4(),
+      ifStatement: {
+        condition: QbUtils.checkTree(QbUtils.loadTree(queryValue), config),
+        actionType: "String",
+        actionMessage: "String",
+        cliFix: "string",
+        conditionBlock: null,
+      },
+      elifStatement: [],
+      // {
+      //   condition: QbUtils.checkTree(QbUtils.loadTree(queryValue), config),
+      //   actionType: "String",
+      //   actionMessage: "String",
+      //   cliFix: "string",
+      //   conditionBlock: null,
+      // },
+      elseStatement: {
+        actionType: "String",
+        actionMessage: "String",
+        cliFix: "string",
+        conditionBlock: null,
+      },
+    });
     this.setState({
       conditionBlocks: [
         ...this.state.conditionBlocks,
@@ -203,45 +252,146 @@ export default class DemoQueryBuilder extends Component {
     // this.setState({ else: true });
   };
 
-  hanldeNesting = (name, id) => {
-    let updatedBLock = this.state.conditionBlocks.map(function (block) {
-      if (block.id == id) {
-        block.elifStatement = [
-          ...block.elifStatement,
-          {
-            id: uuidv4(),
-            condition: QbUtils.checkTree(QbUtils.loadTree(queryValue), config),
-            actionType: "String",
-            actionMessage: "String",
-            cliFix: "string",
-            conditionBlock: null,
-          },
-        ];
+  test = (json, name, id, newObj) => {
+    for (let i = 0; i < json.length; i++) {
+      let newJson = json[i];
+
+      if (newJson.id == id && name == "ifElse") {
+        newJson.ifStatement.conditionBlocks.push(newObj);
+        return json;
       }
-      return block;
-    });
 
-    this.setState({ conditionBlocks: updatedBLock });
+      if (newJson.id == id && name == "elseIf") {
+        newJson.elifStatement = [...newJson.elifStatement, newObj];
+        return json;
+      }
 
-    // this.setState({
-    //   conditionBlocks: this.state.conditionBlocks.map(function (block) {
-    //     if(block.id == id){
-    //       block.elifStatemnt = {
-    //            condition: QbUtils.checkTree(QbUtils.loadTree(queryValue), config),
-    //         actionType: "String",
-    //         actionMessage: "String",
-    //         cliFix: "string",
-    //         conditionBlock: null,
-    //       }
+      if (newJson.ifStatement.id == id) {
+        newJson.ifStatement.conditionBlocks.ifStatement = newObj;
+        return json;
+      }
+
+      newJson.elifStatement &&
+        newJson.elifStatement.forEach((elif) => {
+          if (elif.id == id) {
+            // newJson.elifStatement.condition.push(newObj);
+            elif.conditionBlocks.push(newObj);
+            return json;
+          }
+        });
+
+      if (newJson.elseStatement && newJson.elseStatement.id == id) {
+        newJson.elseStatement.conditionBlocks.push(newObj);
+        return json;
+      }
+
+      if (
+        newJson.ifStatement.conditionBlocks &&
+        newJson.ifStatement.conditionBlocks.length > 0
+      ) {
+        this.test(newJson.ifStatement.conditionBlocks, name, id);
+      }
+
+      if (newJson.elifStatement) {
+        for (let i = 0; i < newJson.elifStatement.length; i++) {
+          if (
+            newJson.elifStatement[i].conditionBlocks &&
+            newJson.elifStatement[i].conditionBlocks.length > 0
+          ) {
+            this.test(newJson.elifStatement[i].conditionBlocks, name, id);
+          }
+        }
+      }
+
+      if (
+        newJson.elifStatement.conditionBlocks &&
+        newJson.elifStatement.conditionBlocks.length > 0
+      ) {
+        this.test(newJson.elifStatement.conditionBlocks, name, id);
+      }
+    }
+  };
+
+  hanldeNesting = (name, id) => {
+
+    console.log('-----this.state.conditionBlocks- nesting', name, id);
+    // create new object
+    let json = this.state.conditionBlocks;
+
+    let newObj;
+    if (name === "elseIf") {
+      newObj = {
+        id: uuidv4(),
+        condition: QbUtils.checkTree(QbUtils.loadTree(queryValue), config),
+        actionType: "String",
+        actionMessage: "String",
+        cliFix: "string",
+        conditionBlocks: null,
+      };
+    } else if (name === "ifElse") {
+      newObj = {
+        ifStatement: {
+          id: uuidv4(),
+
+          condition: QbUtils.checkTree(QbUtils.loadTree(queryValue), config),
+          actionType: "String",
+          actionMessage: "String",
+          cliFix: "string",
+          conditionBlocks: null,
+        },
+
+        elseStatement: {
+          actionType: "String",
+          actionMessage: "String",
+          cliFix: "string",
+          conditionBlocks: null,
+        },
+      };
+    }
+
+    let abc = this.test(this.state.conditionBlocks, name, id, newObj);
+
+    this.setState({ conditionBlocks: abc });
+    // if (name === "elseIf") {
+    //   let updatedBLock = this.state.conditionBlocks.map(function (block) {
+    //     if (block.id == id) {
+    //       block.elifStatement = [
+    //         ...block.elifStatement,
+    //         {
+    //           id: uuidv4(),
+    //           condition: QbUtils.checkTree(
+    //             QbUtils.loadTree(queryValue),
+    //             config
+    //           ),
+    //           actionType: "String",
+    //           actionMessage: "String",
+    //           cliFix: "string",
+    //           conditionBlock: null,
+    //         },
+    //       ];
     //     }
-    //   }),
-    // });
+    //     return block;
+    //   });
+
+    //   this.setState({ conditionBlocks: updatedBLock });
+    // }
   };
 
   render = () => (
     <div style={{ marginLeft: 20 }}>
       {this.state.conditionBlocks &&
         this.state.conditionBlocks.map((value, index) => {
+          return <ConditionBlock key={value.id} conditionBlock={value} hanldeNesting={this.hanldeNesting}/>;
+        })}
+
+        <b>Ingore below</b>
+      {this.state.conditionBlocks &&
+        conditionBlocks.map((value, index) => {
+          console.log(
+            "-------------------------------------</",
+            this.state.conditionBlocks
+          );
+
           let title = "If Condition";
           return (
             <div>
@@ -278,7 +428,7 @@ export default class DemoQueryBuilder extends Component {
                     justifyContent: "space-around",
                     alignItems: "center",
                     fontSize: 10,
-                    marginTop:10
+                    marginTop: 10,
                   }}
                 >
                   <TextField
@@ -312,14 +462,14 @@ export default class DemoQueryBuilder extends Component {
                     style={{ fontSize: 10 }}
                     variant="outlined"
                   />
-                   <TextField
+                  <TextField
                     size="small"
                     // onChange={(e) =>
                     //   this.setState({ ifMessage: e.target.value })
                     // }
                     id="filled-basic"
                     label="Save Output Variable"
-                    style={{fontSize: 10}}
+                    style={{ fontSize: 10 }}
                     variant="outlined"
                   />
 
@@ -359,19 +509,19 @@ export default class DemoQueryBuilder extends Component {
                           fontWeight: "bold",
                           marginTop: 20,
                           fontSize: 10,
-                          display: 'flex'
+                          display: "flex",
                         }}
                       >
                         <p>{"Else If"}</p>
 
-                          <p
-                            onClick={() =>
-                              this.deleteElifCondition(value.id, statement.id)
-                            }
-                            style={{ marginLeft: 10, color: "red" }}
-                          >
-                            X Delete
-                          </p>
+                        <p
+                          onClick={() =>
+                            this.deleteElifCondition(value.id, statement.id)
+                          }
+                          style={{ marginLeft: 10, color: "red" }}
+                        >
+                          X Delete
+                        </p>
                       </div>
                       <Query
                         {...config}
@@ -627,4 +777,188 @@ export default class DemoQueryBuilder extends Component {
     // console.log(jsonTree);
     // `jsonTree` can be saved to backend, and later loaded to `queryValue`
   };
+}
+
+function ConditionBlock({ conditionBlock , hanldeNesting}) {
+  const nestedConditionBlock = (conditionBlock.conditionBlocks || []).map(
+    (condition) => {
+      return (
+        <ConditionBlock conditionBlock={condition} hanldeNesting={hanldeNesting} />
+      );
+    }
+  );
+
+  return (
+    <div style={{ marginLeft: "25px", marginTop: "10px" }}>
+      <p>-------------------------x-------</p>
+      {/* <div>{JSON.stringify(conditionBlock)}</div> */}
+      <IfStatement statement={conditionBlock.ifStatement} id={conditionBlock.id} hanldeNesting={hanldeNesting}/>
+      <ElIfStatement statement={conditionBlock.elIfStatement} hanldeNesting={hanldeNesting} />
+      <ElseStatement statement={conditionBlock.elseStatement} />
+
+      {nestedConditionBlock}
+    </div>
+  );
+}
+
+function IfStatement({ statement, hanldeNesting, id }) {
+  console.log(hanldeNesting);
+  return   <div>
+  <div
+    style={{
+      textAlign: "left",
+      fontWeight: "bold",
+      fontSize: 10,
+      display: "flex",
+    }}
+  >
+    <p> {"IF"}</p>
+    {/* {index !== 0 && ( */}
+      <p
+        onClick={() => this.deleteCondition(statement.id)}
+        style={{ marginLeft: 10, color: "red" }}
+      >
+        X Delete
+      </p>
+    {/* )} */}
+  </div>
+  {/* <Query
+    {...config}
+    value={statement.condition}
+    // onChange={this.onChange}
+    // renderBuilder={this.renderBuilder}
+  /> */}
+  {/* {QbUtils.queryString(this.state.tree, this.state.config) && ( */}
+  <div
+    style={{
+      display: "flex",
+      justifyContent: "space-around",
+      alignItems: "center",
+      fontSize: 10,
+      marginTop: 10,
+    }}
+  >
+    <TextField
+      id="outlined-select-currency-native"
+      select
+      label="Select Action"
+      // value={}
+      value={"VIOLATION"}
+      // onChange={handleChange}
+      SelectProps={{
+        native: true,
+      }}
+      size="small"
+      // helperText="Please Select Action"
+      variant="outlined"
+    >
+      <option style={{ fontSize: 10 }} value="OUTPUT">
+        OUTPUT
+      </option>
+      <option style={{ fontSize: 10 }} value="VIOLATION">
+        VIOLATION
+      </option>
+    </TextField>
+    <TextField
+      size="small"
+      onChange={(e) =>
+        this.setState({ ifMessage: e.target.value })
+      }
+      id="filled-basic"
+      label="Message"
+      style={{ fontSize: 10 }}
+      variant="outlined"
+    />
+    <TextField
+      size="small"
+      // onChange={(e) =>
+      //   this.setState({ ifMessage: e.target.value })
+      // }
+      id="filled-basic"
+      label="Save Output Variable"
+      style={{ fontSize: 10 }}
+      variant="outlined"
+    />
+
+    <FormControl style={{ width: 200 }} size="small">
+      <InputLabel
+        style={{ fontSize: 10 }}
+        id="demo-simple-select-label"
+      >
+        Please Select
+      </InputLabel>
+
+      <Select
+        labelId="demo-simple-select-label"
+        id="demo-simple-select"
+        // value={age}
+        defaultValue={""}
+        // style={{fontSize: 10}}
+
+        onChange={(event) =>
+          hanldeNesting(event.target.value, id)
+        }
+      >
+        <MenuItem value={"ifElse"}>Add Nested If Else</MenuItem>
+        <MenuItem value={"elseIf"}>Add Else If</MenuItem>
+      </Select>
+    </FormControl>
+  </div>
+</div>
+
+}
+
+function ElIfStatement({ statement }) {
+  return <div style={{ marginLeft: "25px", marginTop: "10px" }}></div>;
+}
+
+function ElseStatement({ statement }) {
+  return statement ? (
+    <div>
+      <div
+        style={{
+          textAlign: "left",
+          fontWeight: "bold",
+          marginTop: 20,
+          marginBottom: 20,
+          fontSize: 10,
+        }}
+      >
+        Else Conditions
+      </div>
+      <div style={{ display: "flex", justifyContent: "space-around" }}>
+        <TextField
+          id="outlined-select-currency-native"
+          select
+          label="Select Action"
+          value={"VIOLATION"}
+          style={{ fontSize: 10 }}
+          // onChange={handleChange}
+          SelectProps={{
+            native: true,
+          }}
+          size="small"
+          // helperText="Please Select Action"
+          variant="outlined"
+        >
+          <option value="OUTPUT">OUTPUT</option>
+          <option value="VIOLATION">VIOLATION</option>
+        </TextField>
+
+        <div style={{ fontSize: 12 }}>
+          <TextField
+            size="small"
+            onChange={(e) =>
+              this.setState({ finalElseMessage: e.target.value })
+            }
+            id="filled-basic"
+            label="Message"
+            variant="outlined"
+          />
+        </div>
+      </div>
+    </div>
+  ) : (
+    <div></div>
+  );
 }
