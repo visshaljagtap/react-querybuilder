@@ -81,6 +81,7 @@ const queryValue = { id: QbUtils.uuid(), type: "group" };
 
 const uniqueId = uuidv4();
 const uniqueId1 = uuidv4();
+const uniqueId2 = uuidv4();
 
 export default class DemoQueryBuilder extends Component {
   state = {
@@ -106,6 +107,7 @@ export default class DemoQueryBuilder extends Component {
         //   conditionBlocks: null,
         // },
         elseStatement: {
+          id: uniqueId2,
           actionType: "String",
           actionMessage: "String",
           cliFix: "string",
@@ -306,6 +308,7 @@ export default class DemoQueryBuilder extends Component {
         elifStatement: [],
 
         elseStatement: {
+          id: uuidv4(),
           actionType: "String",
           actionMessage: "String",
           cliFix: "string",
@@ -323,6 +326,87 @@ export default class DemoQueryBuilder extends Component {
     this.setState({ conditionBlocks: updatedObject });
   };
 
+
+  valueChangeRecursion = (conditionBlock, name, value, id) => {
+    for (let i = 0; i < conditionBlock.length; i++) {
+      let newJson = conditionBlock[i];
+
+      if (newJson.ifStatement.id == id) {
+        newJson.ifStatement[name] = value;
+        return conditionBlock;
+      }
+
+      if (newJson.elifStatement && newJson.elifStatement.length > 0) {
+        for (let i = 0; i < newJson.elifStatement.length; i++) {
+          if(newJson.elifStatement[i].id === id){
+            newJson.elifStatement[i][name] = value;
+            return conditionBlock;
+          }
+        }
+      }
+
+      if (newJson.elseStatement.id == id) {
+        newJson.elseStatement[name] = value;
+        return conditionBlock;
+      }
+
+      if (
+        newJson.ifStatement.conditionBlocks &&
+        newJson.ifStatement.conditionBlocks.length > 0
+      ) {
+        newJson.ifStatement.conditionBlocks = this.valueChangeRecursion(
+          newJson.ifStatement.conditionBlocks,
+          name,
+          value,
+          id
+        );
+        return conditionBlock;
+      }
+
+      if (newJson.elifStatement) {
+        for (let i = 0; i < newJson.elifStatement.length; i++) {
+          if (
+            newJson.elifStatement[i].conditionBlocks &&
+            newJson.elifStatement[i].conditionBlocks.length > 0
+          ) {
+            newJson.elifStatement[
+              i
+            ].conditionBlocks = this.valueChangeRecursion(
+              newJson.elifStatement[i].conditionBlocks,
+              name,
+              value,
+              id
+            );
+            return conditionBlock;
+          }
+        }
+      }
+
+      if (
+        newJson.elifStatement.conditionBlocks &&
+        newJson.elifStatement.conditionBlocks.length > 0
+      ) {
+        newJson.elifStatement.conditionBlocks = this.valueChangeRecursion(
+          newJson.elifStatement.conditionBlocks,
+          name,
+          value,
+          id
+        );
+        return conditionBlock;
+      }
+    }
+  };
+
+  onValueChange = (name, value, id) => {
+    let updatedJSON = this.valueChangeRecursion(
+      this.state.conditionBlocks,
+      name,
+      value,
+      id
+    );
+    this.setState({ conditionBlocks: updatedJSON });
+  };
+
   render = () => (
     <div style={{ marginLeft: 10 }}>
       {this.state.conditionBlocks &&
@@ -335,9 +419,11 @@ export default class DemoQueryBuilder extends Component {
                 key={value.id}
                 conditionBlock={value}
                 hanldeNesting={this.hanldeNesting}
+                renderBuilder={this.renderBuilder}
+                onValueChange={this.onValueChange}
               />
             </div>
-          )
+          );
         })}
 
       {/* {QbUtils.queryString(this.state.tree, this.state.config) && ( */}
@@ -466,27 +552,46 @@ export default class DemoQueryBuilder extends Component {
   };
 }
 
-function ConditionBlock({ conditionBlock, hanldeNesting, deleteCondition }) {
+function ConditionBlock({
+  conditionBlock,
+  hanldeNesting,
+  deleteCondition,
+  renderBuilder,
+  onValueChange,
+}) {
   return (
-    <div style={{ marginLeft: "10px", marginTop: "5px" }}>
+    <div style={{ marginLeft: "10px" }}>
       <IfStatement
         statement={conditionBlock.ifStatement}
         deleteCondition={deleteCondition}
         parentID={conditionBlock.id}
         hanldeNesting={hanldeNesting}
+        renderBuilder={renderBuilder}
+        onValueChange={onValueChange}
       />
       <ElIfStatement
         statements={conditionBlock.elifStatement}
         deleteCondition={deleteCondition}
         parentID={conditionBlock.id}
         hanldeNesting={hanldeNesting}
+        renderBuilder={renderBuilder}
+        onValueChange={onValueChange}
+
       />
-      <ElseStatement statement={conditionBlock.elseStatement} />
+        
+      <ElseStatement statement={conditionBlock.elseStatement} onValueChange={onValueChange} />
     </div>
   );
 }
 
-function IfStatement({ statement, hanldeNesting, parentID, deleteCondition }) {
+function IfStatement({
+  statement,
+  hanldeNesting,
+  parentID,
+  deleteCondition,
+  renderBuilder,
+  onValueChange,
+}) {
   console.log(statement);
   const nestedConditionBlock = (statement.conditionBlocks || []).map(
     (condition) => {
@@ -495,6 +600,8 @@ function IfStatement({ statement, hanldeNesting, parentID, deleteCondition }) {
           conditionBlock={condition}
           deleteCondition={deleteCondition}
           hanldeNesting={hanldeNesting}
+          renderBuilder={renderBuilder}
+          onValueChange={onValueChange}
         />
       );
     }
@@ -512,27 +619,27 @@ function IfStatement({ statement, hanldeNesting, parentID, deleteCondition }) {
             display: "flex",
           }}
         >
-          <p> {"IF"}</p>
+          <p> {"IF Condition"}</p>
           {/* {index !== 0 && ( */}
           <p
             onClick={() => deleteCondition(statement.id, parentID, "IfElse")}
             style={{ marginLeft: 10, color: "red" }}
           >
-            X Delete
+            X Remove
           </p>
           {/* )} */}
         </div>
-        {/* <Query
-    {...config}
-    value={statement.condition}
-    // onChange={this.onChange}
-    // renderBuilder={this.renderBuilder}
-  /> */}
+        <Query
+          {...config}
+          value={statement.condition}
+          // onChange={this.onChange}
+          renderBuilder={renderBuilder}
+        />
         {/* {QbUtils.queryString(this.state.tree, this.state.config) && ( */}
         <div
           style={{
             display: "flex",
-            justifyContent: "space-around",
+            justifyContent: "flex-start",
             alignItems: "center",
             fontSize: 10,
             marginTop: 10,
@@ -561,12 +668,24 @@ function IfStatement({ statement, hanldeNesting, parentID, deleteCondition }) {
           </TextField>
           <TextField
             size="small"
-            // onChange={(e) =>
-            //   this.setState({ ifMessage: e.target.value })
-            // }
+            onChange={(e) =>
+              onValueChange("actionMessage", e.target.value, statement.id)
+            }
+            value={statement.actionMessage}
             id="filled-basic"
             label="Message"
-            style={{ fontSize: 10 }}
+            style={{ fontSize: 10, margin: "0px 20px" }}
+            variant="outlined"
+          />
+          <TextField
+            size="small"
+            onChange={(e) =>
+              onValueChange("cliFix", e.target.value, statement.id)
+            }
+            id="filled-basic"
+            label="Cli Fix"
+            value={statement.cliFix}
+            style={{ fontSize: 10, marginRight: 20 }}
             variant="outlined"
           />
           {/* <TextField
@@ -591,7 +710,6 @@ function IfStatement({ statement, hanldeNesting, parentID, deleteCondition }) {
               // value={age}
               defaultValue={""}
               // style={{fontSize: 10}}
-
               onChange={(event) => hanldeNesting(event.target.value, parentID)}
             >
               <MenuItem value={"ifElse"}>Add Nested If Else</MenuItem>
@@ -610,6 +728,8 @@ function ElIfStatement({
   deleteCondition,
   parentID,
   hanldeNesting,
+  renderBuilder,
+  onValueChange
 }) {
   return statements && statements.length > 0 ? (
     statements.map((statement) => {
@@ -620,33 +740,34 @@ function ElIfStatement({
             style={{
               textAlign: "left",
               fontWeight: "bold",
-              marginTop: 20,
+              marginTop: 10,
               fontSize: 10,
               display: "flex",
             }}
           >
-            <p>{"Else If"}</p>
+            <p>{"Else If Condition"}</p>
 
             <p
               onClick={() => deleteCondition(statement.id, parentID, "elseIf")}
               style={{ marginLeft: 10, color: "red" }}
             >
-              X Delete
+              X Remove
             </p>
           </div>
-          {/* <Query
-          {...config}
-          value={statement.condition}
-          onChange={this.onChange}
-          renderBuilder={this.renderBuilder}
-        /> */}
+          <Query
+            {...config}
+            value={statement.condition}
+            // onChange={this.onChange}
+            renderBuilder={renderBuilder}
+          />
           {/* {QbUtils.queryString(this.state.tree, this.state.config) && ( */}
           <div
             style={{
               display: "flex",
-              justifyContent: "space-around",
+              justifyContent: "flex-start",
               alignItems: "center",
               fontSize: 10,
+              marginTop: 10,
             }}
           >
             <TextField
@@ -672,12 +793,25 @@ function ElIfStatement({
             </TextField>
             <TextField
               size="small"
-              // onChange={(e) =>
-              //   this.setState({ ifMessage: e.target.value })
-              // }
+              onChange={(e) =>
+                onValueChange("actionMessage", e.target.value, statement.id)
+              }
+              value={statement.actionMessage}
               id="filled-basic"
               label="Message"
-              style={{ fontSize: 10 }}
+              style={{ fontSize: 10, margin: "0px 20px" }}
+              variant="outlined"
+            />
+
+            <TextField
+              size="small"
+              onChange={(e) =>
+                onValueChange("cliFix", e.target.value, statement.id)
+              }
+              value={statement.cliFix}
+              id="filled-basic"
+              label="Cli Fix"
+              style={{ fontSize: 10, marginRight: 20 }}
               variant="outlined"
             />
 
@@ -715,21 +849,21 @@ function ElIfStatement({
   );
 }
 
-function ElseStatement({ statement }) {
+function ElseStatement({ statement , onValueChange}) {
   return statement ? (
     <div>
       <div
         style={{
           textAlign: "left",
           fontWeight: "bold",
-          marginTop: 20,
+          marginTop: 10,
           marginBottom: 20,
           fontSize: 10,
         }}
       >
-        Else Conditions
+        Else Condition
       </div>
-      <div style={{ display: "flex", justifyContent: "space-around" }}>
+      <div style={{ display: "flex", justifyContent: "flex-start" }}>
         <TextField
           id="outlined-select-currency-native"
           select
@@ -748,20 +882,33 @@ function ElseStatement({ statement }) {
           <option value="VIOLATION">VIOLATION</option>
         </TextField>
 
-        <div style={{ fontSize: 12 }}>
+        <div style={{ fontSize: 12, margin: "0px 20px" }}>
           <TextField
             size="small"
-            // onChange={(e) =>
-            //   this.setState({ finalElseMessage: e.target.value })
-            // }
+            onChange={(e) =>
+              onValueChange("actionMessage", e.target.value, statement.id)
+            }
+            value={statement.actionMessage}
             id="filled-basic"
             label="Message"
             variant="outlined"
           />
         </div>
+
+        <TextField
+          size="small"
+          onChange={(e) =>
+            onValueChange("cliFix", e.target.value, statement.id)
+          }
+          value={statement.cliFix}
+          id="filled-basic"
+          label="Cli Fix"
+          style={{ fontSize: 10 }}
+          variant="outlined"
+        />
       </div>
     </div>
   ) : (
     <div></div>
-  )
+  );
 }

@@ -34,3 +34,19 @@ code {
 span, input, .MuiButton-label, .MuiSelect-select, li {
   font-size: 12px !important;
 }
+
+
+.query-builder{
+  margin: 0px !important;
+}
+
+.group {
+  background: rgb(64 63 60 / 13%) !important;
+  border: 1px solid rgb(64 63 60 / 13%) !important
+
+}
+
+.rule--body {
+  display: flex;
+    align-items: center;
+}
