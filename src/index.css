@@ -50,3 +50,7 @@ span, input, .MuiButton-label, .MuiSelect-select, li {
   display: flex;
     align-items: center;
 }
+
+.MuiBox-root{
+  padding: 5px !important;
+}

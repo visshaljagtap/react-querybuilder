@@ -16,6 +16,13 @@ import {
   Snackbar,
 } from "@material-ui/core";
 import { v4 as uuidv4 } from "uuid";
+import { makeStyles } from "@material-ui/core/styles";
+import AppBar from "@material-ui/core/AppBar";
+import Tabs from "@material-ui/core/Tabs";
+import Tab from "@material-ui/core/Tab";
+import Typography from "@material-ui/core/Typography";
+import Box from "@material-ui/core/Box";
+import ReactJson from "react-json-view";
 
 // For Material-UI widgets only:
 import MaterialConfig from "react-awesome-query-builder/lib/config/material";
@@ -107,10 +114,45 @@ const uniqueId = uuidv4();
 const uniqueId1 = uuidv4();
 const uniqueId2 = uuidv4();
 
+function TabPanel(props) {
+  const { children, value, index, ...other } = props;
+
+  return (
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`simple-tabpanel-${index}`}
+      aria-labelledby={`simple-tab-${index}`}
+      {...other}
+    >
+      {value === index && (
+        <Box p={3}>
+          <Typography>{children}</Typography>
+        </Box>
+      )}
+    </div>
+  );
+}
+
+function a11yProps(index) {
+  return {
+    id: `simple-tab-${index}`,
+    "aria-controls": `simple-tabpanel-${index}`,
+  };
+}
+
+const useStyles = makeStyles((theme) => ({
+  root: {
+    flexGrow: 1,
+    backgroundColor: theme.palette.background.paper,
+  },
+}));
+
 export default class DemoQueryBuilder extends Component {
   state = {
     config: config,
     finalOutput: null,
+    value: 0,
     conditionBlocks: [
       {
         id: uniqueId,
@@ -439,46 +481,94 @@ export default class DemoQueryBuilder extends Component {
     this.setState({ conditionBlocks: updatedJSON });
   };
 
+  handleChange = (event, newValue) => {
+    this.setState({ value: newValue });
+  };
+
   render = () => (
     <div>
-      {this.state.conditionBlocks &&
-        this.state.conditionBlocks.map((value, index) => {
-          return (
-            <div>
-              <b>----------------------</b>
-              <ConditionBlock
-                deleteCondition={this.deleteCondition}
-                key={value.id}
-                conditionBlock={value}
-                hanldeNesting={this.hanldeNesting}
-                renderBuilder={this.renderBuilder}
-                onValueChange={this.onValueChange}
-                onQueryBuilderChange={this.onQueryBuilderChange}
-              />
+      <AppBar position="static">
+        <Tabs
+          value={this.state.value}
+          onChange={this.handleChange}
+          aria-label="simple tabs example"
+        >
+          <Tab label="Rule Conditions" {...a11yProps(0)} />
+          <Tab label="JSON Condition" {...a11yProps(1)} />
+          <Tab label="Condition Tree" {...a11yProps(2)} />
+        </Tabs>
+      </AppBar>
+      <TabPanel value={this.state.value} index={0}>
+        <div style={{ display: "flex" }}>
+          <div style={{ width: "70%" }}>
+            {this.state.conditionBlocks &&
+              this.state.conditionBlocks.map((value, index) => {
+                return (
+                  <div>
+                    <ConditionBlock
+                      deleteCondition={this.deleteCondition}
+                      key={value.id}
+                      conditionBlock={value}
+                      hanldeNesting={this.hanldeNesting}
+                      renderBuilder={this.renderBuilder}
+                      onValueChange={this.onValueChange}
+                      onQueryBuilderChange={this.onQueryBuilderChange}
+                    />
+                  </div>
+                );
+              })}
+            <div style={{ marginTop: 20 }}>
+              <Button size="small" onClick={this.addMoreIf}>
+                + Add IF Block
+              </Button>
             </div>
-          );
-        })}
+            <div style={{ width: "70%", textAlign: "center", marginTop: 20 }}>
+              <Button
+                size="small"
+                variant="contained"
+                color="primary"
+                onClick={this.submitJSON}
+              >
+                Submit
+              </Button>
+            </div>
+          </div>
+          <div style={{ width: "30%", marginLeft: 10 }}>
+            <span>OUTPUT JSON</span>
+            <ReactJson
+              theme="bright:inverted"
+              displayDataTypes={false}
+              collapsed={2}
+              indentWidth={2}
+              enableEdit={true}
+              onEdit={(value)=>this.setState({conditionBlocks: value.updated_src})}
+              src={this.state.conditionBlocks}
+            />
+          </div>
+        </div>
+
+        {/* <div style={{ marginTop: 20, fontSize: 12 }}>
+          <p>{JSON.stringify(this.state.conditionBlocks)}</p>
+        </div> */}
+      </TabPanel>
+      <TabPanel value={this.state.value} index={1}>
+        <span>OUTPUT JSON</span>
+        <div style={{ marginTop: 20, fontSize: 12 }}>
+          <p>{JSON.stringify(this.state.conditionBlocks)}</p>
+        </div>
+        <ReactJson
+          theme="twilight"
+          displayDataTypes={false}
+          collapsed={2}
+          indentWidth={2}
+          src={this.state.conditionBlocks}
+        />
+      </TabPanel>
+      <TabPanel value={this.state.value} index={2}>
+        Condition Tree
+      </TabPanel>
 
       {/* {QbUtils.queryString(this.state.tree, this.state.config) && ( */}
-      <div style={{ marginTop: 20 }}>
-        <Button size="small" onClick={this.addMoreIf}>
-          + Add IF Block
-        </Button>
-      </div>
-      <div style={{ textAlign: "center", marginTop: 20 }}>
-        <Button
-          size="small"
-          variant="contained"
-          color="primary"
-          onClick={this.submitJSON}
-        >
-          Submit
-        </Button>
-      </div>
-
-      <div style={{ marginTop: 20, fontSize: 12 }}>
-        <p>{JSON.stringify(this.state.conditionBlocks)}</p>
-      </div>
     </div>
   );
 
@@ -536,7 +626,7 @@ function ConditionBlock({
   onQueryBuilderChange,
 }) {
   return (
-    <div style={{ marginLeft: "10px" }}>
+    <div style={{ padding: "5px 10px", border: "1px solid gray" }}>
       <IfStatement
         statement={conditionBlock.ifStatement}
         deleteCondition={deleteCondition}
@@ -634,16 +724,17 @@ function IfStatement({
             fontWeight: "bold",
             fontSize: 10,
             display: "flex",
+            marginBottom: 3,
           }}
         >
-          <p> {"IF Condition"}</p>
+          <div> {"IF Condition"}</div>
           {/* {index !== 0 && ( */}
-          <p
+          <div
             onClick={() => deleteCondition(statement.id, parentID, "IfElse")}
             style={{ marginLeft: 10, color: "red" }}
           >
             X Remove
-          </p>
+          </div>
           {/* )} */}
         </div>
         <Query
@@ -829,14 +920,14 @@ function ElIfStatement({
               display: "flex",
             }}
           >
-            <p>{"Else If Condition"}</p>
+            <div>{"Else If Condition"}</div>
 
-            <p
+            <div
               onClick={() => deleteCondition(statement.id, parentID, "elseIf")}
               style={{ marginLeft: 10, color: "red" }}
             >
               X Remove
-            </p>
+            </div>
           </div>
           <Query
             {...config}
