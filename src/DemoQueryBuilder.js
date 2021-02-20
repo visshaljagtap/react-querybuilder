@@ -36,46 +36,70 @@ const config = {
     showNot: true,
   },
   fields: {
-    $c1: {
+    $show_command: {
       label: "show command", //only for menu's toggler
       type: "text",
       excludeOperators: ["proximity"],
       operators: [
-        "equal",
         "like",
-        "not_like",
+        "equal",
+        "greater_or_equal",
+        "greater",
+        "less_or_equal",
+        "less",
         "starts_with",
         "ends_with",
         "regex",
+        "not_equal",
       ],
       defaultOperator: "like",
     },
-    $c2: {
+    $Show_cdp_neighbours: {
       label: "Show cdp neighbours", //only for menu's toggler
       type: "text",
       defaultOperator: "like",
-      operators: ["equal", "like", "not_like", "starts_with", "ends_with"],
+      operators: [
+        "like",
+        "equal",
+        "greater_or_equal",
+        "greater",
+        "less_or_equal",
+        "not_equal",
+        "less",
+        "starts_with",
+        "ends_with",
+      ],
       excludeOperators: ["proximity"],
     },
-    $c3: {
-      label: "c3", //only for menu's toggler
+    $show_run: {
+      label: "show run", //only for menu's toggler
       type: "text",
+      operators: [
+        "like",
+        "equal",
+        "not_equal",
+
+        // "not_like",
+        "starts_with",
+        "ends_with",
+        "greater_or_equal",
+        "greater",
+        "less_or_equal",
+        "less",
+      ],
+      defaultOperator: "like",
       excludeOperators: ["proximity"],
-    },
-    $c4: {
-      label: "c4", //only for menu's toggler
-      type: "text",
-    },
-    c5: {
-      label2: "c5", //only for menu's toggler
-      type: "text",
-    },
-    c6: {
-      label2: "c6", //only for menu's toggler
-      type: "text",
     },
   },
 };
+
+console.log("0---", config, InitialConfig);
+
+config.operators.equal.label = "matches";
+config.operators.equal.labelForFormat = "matches";
+
+config.operators.like.label = "contains";
+config.operators.like.labelForFormat = "contains";
 
 const queryValue = { id: QbUtils.uuid(), type: "group" };
 
@@ -489,10 +513,10 @@ export default class DemoQueryBuilder extends Component {
       conditionString = conditionString.replace(/[\\]/g, "");
       conditionString = conditionString.replace(/\("/g, "(");
       conditionString = conditionString.replace(/\" \)/g, ")");
-      conditionString = conditionString.replace(/"/g, "'")
+      conditionString = conditionString.replace(/"/g, "'");
     }
 
-    console.log('[[[', conditionString);
+    console.log("[[[", conditionString);
     this.onValueChange("condition", conditionString, id);
 
     this.setState({ tree: immutableTree, config: config });
@@ -639,17 +663,19 @@ function IfStatement({
             style={{ fontSize: 10, margin: "0px 20px" }}
             variant="outlined"
           />
-          <TextField
-            size="small"
-            onChange={(e) =>
-              onValueChange("cliFix", e.target.value, statement.id)
-            }
-            id="filled-basic"
-            label="Cli Fix"
-            value={statement.cliFix}
-            style={{ fontSize: 10, marginRight: 20 }}
-            variant="outlined"
-          />
+          {statement.actionType === "VIOLATION" && (
+            <TextField
+              size="small"
+              onChange={(e) =>
+                onValueChange("cliFix", e.target.value, statement.id)
+              }
+              id="filled-basic"
+              label="Cli Fix"
+              value={statement.cliFix}
+              style={{ fontSize: 10, marginRight: 20 }}
+              variant="outlined"
+            />
+          )}
           {/* <TextField
       size="small"
       // onChange={(e) =>
@@ -770,17 +796,19 @@ function ElIfStatement({
               variant="outlined"
             />
 
-            <TextField
-              size="small"
-              onChange={(e) =>
-                onValueChange("cliFix", e.target.value, statement.id)
-              }
-              value={statement.cliFix}
-              id="filled-basic"
-              label="Cli Fix"
-              style={{ fontSize: 10, marginRight: 20 }}
-              variant="outlined"
-            />
+            {statement.actionType === "VIOLATION" && (
+              <TextField
+                size="small"
+                onChange={(e) =>
+                  onValueChange("cliFix", e.target.value, statement.id)
+                }
+                value={statement.cliFix}
+                id="filled-basic"
+                label="Cli Fix"
+                style={{ fontSize: 10, marginRight: 20 }}
+                variant="outlined"
+              />
+            )}
 
             <FormControl style={{ width: 200 }} size="small">
               <InputLabel
@@ -869,17 +897,19 @@ function ElseStatement({ statement, onValueChange }) {
           />
         </div>
 
-        <TextField
-          size="small"
-          onChange={(e) =>
-            onValueChange("cliFix", e.target.value, statement.id)
-          }
-          value={statement.cliFix}
-          id="filled-basic"
-          label="Cli Fix"
-          style={{ fontSize: 10 }}
-          variant="outlined"
-        />
+        {statement.actionType === "VIOLATION" && (
+          <TextField
+            size="small"
+            onChange={(e) =>
+              onValueChange("cliFix", e.target.value, statement.id)
+            }
+            value={statement.cliFix}
+            id="filled-basic"
+            label="Cli Fix"
+            style={{ fontSize: 10 }}
+            variant="outlined"
+          />
+        )}
       </div>
     </div>
   ) : (
