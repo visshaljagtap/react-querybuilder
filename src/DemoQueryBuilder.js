@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { Component, useState } from "react";
 import {
   Query,
   Builder,
@@ -13,8 +13,8 @@ import {
   MenuItem,
   InputLabel,
   FormControl,
+  Snackbar,
 } from "@material-ui/core";
-import { makeStyles } from "@material-ui/core/styles";
 import { v4 as uuidv4 } from "uuid";
 
 // For Material-UI widgets only:
@@ -589,6 +589,41 @@ function IfStatement({
     }
   );
 
+  const [output, setOutput] = useState();
+  const [open, setOpen] = React.useState(false);
+
+  const saveOutput = () => {
+    console.log("---", output, config);
+    config.fields["$" + output] = {
+      label: output, //only for menu's toggler
+      type: "text",
+      operators: [
+        "like",
+        "equal",
+        "not_equal",
+
+        // "not_like",
+        "starts_with",
+        "ends_with",
+        "greater_or_equal",
+        "greater",
+        "less_or_equal",
+        "less",
+      ],
+      defaultOperator: "like",
+      excludeOperators: ["proximity"],
+    };
+    setOpen(true);
+  };
+
+  const handleClose = (event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+
+    setOpen(false);
+  };
+
   return (
     <>
       {" "}
@@ -620,6 +655,21 @@ function IfStatement({
           renderBuilder={renderBuilder}
         />
         {/* {QbUtils.queryString(this.state.tree, this.state.config) && ( */}
+        {statement.condition && (
+          <div
+            style={{ marginTop: 5, display: "flex", alignContent: "center" }}
+          >
+            <span>Save Expression Result into</span>
+            <input
+              style={{ width: 50, marginLeft: 20, marginRight: 20 }}
+              onChange={
+                (e) => setOutput(e.target.value)
+                // onValueChange("expressionResult", e.target.value, statement.id)
+              }
+            />
+            <button onClick={saveOutput}>Save</button>
+          </div>
+        )}
         <div
           style={{
             display: "flex",
@@ -706,6 +756,17 @@ function IfStatement({
           </FormControl>
         </div>
       </div>
+      <Snackbar open={open} autoHideDuration={1000} onClose={handleClose}>
+        <div
+          style={{
+            background: "#80808059",
+            padding: "5px 20px",
+            borderRadius: 25,
+          }}
+        >
+          Saved successfully!
+        </div>
+      </Snackbar>
       {nestedConditionBlock}
     </>
   );
@@ -720,6 +781,40 @@ function ElIfStatement({
   onValueChange,
   onQueryBuilderChange,
 }) {
+  const [output, setOutput] = useState();
+  const [open, setOpen] = useState(false);
+
+  const handleClose = (event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+
+    setOpen(false);
+  };
+
+  const saveOutput = () => {
+    console.log("---", output, config);
+    config.fields["$" + output] = {
+      label: output, //only for menu's toggler
+      type: "text",
+      operators: [
+        "like",
+        "equal",
+        "not_equal",
+
+        // "not_like",
+        "starts_with",
+        "ends_with",
+        "greater_or_equal",
+        "greater",
+        "less_or_equal",
+        "less",
+      ],
+      defaultOperator: "like",
+      excludeOperators: ["proximity"],
+    };
+    setOpen(true);
+  };
   return statements && statements.length > 0 ? (
     statements.map((statement) => {
       console.log("sss", statement.id);
@@ -752,6 +847,21 @@ function ElIfStatement({
             renderBuilder={renderBuilder}
           />
           {/* {QbUtils.queryString(this.state.tree, this.state.config) && ( */}
+          {statement.condition && (
+            <div
+              style={{ marginTop: 5, display: "flex", alignContent: "center" }}
+            >
+              <span>Save Expression Result into</span>
+              <input
+                style={{ width: 50, marginLeft: 20, marginRight: 20 }}
+                onChange={
+                  (e) => setOutput(e.target.value)
+                  // onValueChange("expressionResult", e.target.value, statement.id)
+                }
+              />
+              <button onClick={saveOutput}>Save</button>
+            </div>
+          )}
           <div
             style={{
               display: "flex",
@@ -840,6 +950,17 @@ function ElIfStatement({
               </Select>
             </FormControl>
           </div>
+          <Snackbar open={open} autoHideDuration={1000} onClose={handleClose}>
+            <div
+              style={{
+                background: "#80808059",
+                padding: "5px 20px",
+                borderRadius: 25,
+              }}
+            >
+              Saved successfully!
+            </div>
+          </Snackbar>
         </div>
       );
     })
