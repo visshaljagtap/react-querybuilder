@@ -92,7 +92,8 @@ export default class DemoQueryBuilder extends Component {
         id: uniqueId,
         ifStatement: {
           id: uniqueId1,
-          condition: QbUtils.checkTree(QbUtils.loadTree(queryValue), config),
+          queryBuilder: QbUtils.checkTree(QbUtils.loadTree(queryValue), config),
+          condition: "",
           actionType: "OUTPUT",
           actionMessage: "",
           cliFix: "",
@@ -163,18 +164,18 @@ export default class DemoQueryBuilder extends Component {
         }
       }
 
-      if (
-        newJson.elifStatement.conditionBlocks &&
-        newJson.elifStatement.conditionBlocks.length > 0
-      ) {
-        newJson.elifStatement.conditionBlocks = this.deleteRecursion(
-          id,
-          parentID,
-          conditionType,
-          newJson.ifStatement.conditionBlocks
-        );
-        return json;
-      }
+      // if (
+      //   newJson.elifStatement.conditionBlocks &&
+      //   newJson.elifStatement.conditionBlocks.length > 0
+      // ) {
+      //   newJson.elifStatement.conditionBlocks = this.deleteRecursion(
+      //     id,
+      //     parentID,
+      //     conditionType,
+      //     newJson.ifStatement.conditionBlocks
+      //   );
+      //   return json;
+      // }
     }
   };
 
@@ -196,7 +197,11 @@ export default class DemoQueryBuilder extends Component {
           id: uuidv4(),
           ifStatement: {
             id: uuidv4(),
-            condition: QbUtils.checkTree(QbUtils.loadTree(queryValue), config),
+            queryBuilder: QbUtils.checkTree(
+              QbUtils.loadTree(queryValue),
+              config
+            ),
+            condition: "",
             actionType: "OUTPUT",
             actionMessage: "",
             cliFix: "",
@@ -266,28 +271,29 @@ export default class DemoQueryBuilder extends Component {
         }
       }
 
-      if (
-        newJson.elifStatement.conditionBlocks &&
-        newJson.elifStatement.conditionBlocks.length > 0
-      ) {
-        newJson.elifStatement.conditionBlocks = this.addCondition(
-          newJson.elifStatement.conditionBlocks,
-          name,
-          id,
-          newObj
-        );
-        return json;
-      }
+      // if (
+      //   newJson.elifStatement.conditionBlocks &&
+      //   newJson.elifStatement.conditionBlocks.length > 0
+      // ) {
+      //   newJson.elifStatement.conditionBlocks = this.addCondition(
+      //     newJson.elifStatement.conditionBlocks,
+      //     name,
+      //     id,
+      //     newObj
+      //   );
+      //   return json;
+      // }
     }
   };
 
   hanldeNesting = (name, id) => {
-    console.log("----", this.state.conditionBlocks);
+    console.log("----", this.state.conditionBlocks, id);
     let newObj;
     if (name === "elseIf") {
       newObj = {
         id: uuidv4(),
-        condition: QbUtils.checkTree(QbUtils.loadTree(queryValue), config),
+        queryBuilder: QbUtils.checkTree(QbUtils.loadTree(queryValue), config),
+        condition: "",
         actionType: "OUTPUT",
         actionMessage: "",
         cliFix: "",
@@ -298,7 +304,8 @@ export default class DemoQueryBuilder extends Component {
         id: uuidv4(),
         ifStatement: {
           id: uuidv4(),
-          condition: QbUtils.checkTree(QbUtils.loadTree(queryValue), config),
+          queryBuilder: QbUtils.checkTree(QbUtils.loadTree(queryValue), config),
+          condition: "",
           actionType: "OUTPUT",
           actionMessage: "",
           cliFix: "",
@@ -323,9 +330,10 @@ export default class DemoQueryBuilder extends Component {
       id,
       newObj
     );
-    this.setState({ conditionBlocks: updatedObject });
+    if (updatedObject) {
+      this.setState({ conditionBlocks: updatedObject });
+    }
   };
-
 
   valueChangeRecursion = (conditionBlock, name, value, id) => {
     for (let i = 0; i < conditionBlock.length; i++) {
@@ -338,7 +346,7 @@ export default class DemoQueryBuilder extends Component {
 
       if (newJson.elifStatement && newJson.elifStatement.length > 0) {
         for (let i = 0; i < newJson.elifStatement.length; i++) {
-          if(newJson.elifStatement[i].id === id){
+          if (newJson.elifStatement[i].id === id) {
             newJson.elifStatement[i][name] = value;
             return conditionBlock;
           }
@@ -382,18 +390,18 @@ export default class DemoQueryBuilder extends Component {
         }
       }
 
-      if (
-        newJson.elifStatement.conditionBlocks &&
-        newJson.elifStatement.conditionBlocks.length > 0
-      ) {
-        newJson.elifStatement.conditionBlocks = this.valueChangeRecursion(
-          newJson.elifStatement.conditionBlocks,
-          name,
-          value,
-          id
-        );
-        return conditionBlock;
-      }
+      // if (
+      //   newJson.elifStatement.conditionBlocks &&
+      //   newJson.elifStatement.conditionBlocks.length > 0
+      // ) {
+      //   newJson.elifStatement.conditionBlocks = this.valueChangeRecursion(
+      //     newJson.elifStatement.conditionBlocks,
+      //     name,
+      //     value,
+      //     id
+      //   );
+      //   return conditionBlock;
+      // }
     }
   };
 
@@ -421,6 +429,7 @@ export default class DemoQueryBuilder extends Component {
                 hanldeNesting={this.hanldeNesting}
                 renderBuilder={this.renderBuilder}
                 onValueChange={this.onValueChange}
+                onQueryBuilderChange={this.onQueryBuilderChange}
               />
             </div>
           );
@@ -443,73 +452,14 @@ export default class DemoQueryBuilder extends Component {
         </Button>
       </div>
 
-      <div style={{ marginTop: 20, fontSize: 12}}>
+      <div style={{ marginTop: 20, fontSize: 12 }}>
         <p>{JSON.stringify(this.state.conditionBlocks)}</p>
       </div>
     </div>
   );
 
-  submitJSON = () =>{
+  submitJSON = () => {
     console.log(this.state.conditionBlocks);
-  }
-
-  generateDSL = () => {
-    // console.log(
-    //   JSON.stringify(QbUtils.queryString(this.state.tree, this.state.config)),  this.state.ifAction, this.state.ifMessage
-    // );
-    // console.log(
-    //   JSON.stringify(
-    //     QbUtils.queryString(this.state.elseTree, this.state.config)
-    //   ),this.state.elseAction, this.state.elseMessage
-    // );
-
-    let ifCondtion = JSON.stringify(
-      QbUtils.queryString(this.state.tree, this.state.config)
-    );
-    let elseCondtion = JSON.stringify(
-      QbUtils.queryString(this.state.elseTree, this.state.config)
-    );
-
-    let elseStatement = " ";
-    let finalElse =
-      "ELSE BEGIN " +
-      this.state.finalElseAction +
-      " " +
-      `"${this.state.finalElseMessage}"` +
-      " END ";
-
-    if (elseCondtion) {
-      elseStatement =
-        "ELIF (" +
-        elseCondtion +
-        " ) BEGIN RETURN " +
-        this.state.elseAction +
-        " " +
-        `"${this.state.elseMessage}"` +
-        " END ";
-    }
-
-    let finalDSL = "CONDITION condition_1 BEGIN IF (";
-    finalDSL =
-      finalDSL +
-      ifCondtion +
-      " ) BEGIN RETURN " +
-      this.state.ifAction +
-      " " +
-      `"${this.state.ifMessage}"` +
-      " END ";
-    finalDSL = finalDSL + elseStatement + finalElse + "END";
-
-    finalDSL = finalDSL.replace(/\&&/g, "and");
-    finalDSL = finalDSL.replace(/\|\|/g, "or");
-
-    finalDSL = finalDSL.replace(/[\\]/g, "");
-    finalDSL = finalDSL.replace(/\("/g, "(");
-    finalDSL = finalDSL.replace(/\" \)/g, ")");
-
-    // finalDSL  = finalDSL.replace("\"", "");
-    this.setState({ finalOutput: finalDSL });
-    console.log(finalDSL);
   };
 
   renderBuilder = (props) => (
@@ -520,35 +470,32 @@ export default class DemoQueryBuilder extends Component {
     </div>
   );
 
-  // renderResult = ({tree: immutableTree, config}) => (
-  //   <div className="query-builder-result">
-  //       <div>Query : <pre>{JSON.stringify(QbUtils.queryString(immutableTree, config))}</pre></div>
-  //   </div>
-  // )
-
-  // renderElseResult = ({elseTree: immutableTree, config}) => (
-  //   <div className="query-builder-result">
-  //       <div>Query : <pre>{JSON.stringify(QbUtils.queryString(immutableTree, config))}</pre></div>
-  //   </div>
-  // )
-
-  onChange = (immutableTree, config) => {
+  onQueryBuilderChange = (immutableTree, config, id) => {
     // Tip: for better performance you can apply `throttle` - see `examples/demo`
     console.log(
       "----",
       QbUtils.queryString(this.state.tree, this.state.config)
     );
 
+    let conditionString = QbUtils.queryString(
+      this.state.tree,
+      this.state.config
+    );
+
+    if (conditionString) {
+      conditionString = conditionString.replace(/\&&/g, "and");
+      conditionString = conditionString.replace(/\|\|/g, "or");
+
+      conditionString = conditionString.replace(/[\\]/g, "");
+      conditionString = conditionString.replace(/\("/g, "(");
+      conditionString = conditionString.replace(/\" \)/g, ")");
+      conditionString = conditionString.replace(/"/g, "'")
+    }
+
+    console.log('[[[', conditionString);
+    this.onValueChange("condition", conditionString, id);
+
     this.setState({ tree: immutableTree, config: config });
-
-    // const jsonTree = QbUtils.getTree(immutableTree);
-    // console.log(jsonTree);
-    // `jsonTree` can be saved to backend, and later loaded to `queryValue`
-  };
-
-  onElseChange = (immutableTree, config) => {
-    // Tip: for better performance you can apply `throttle` - see `examples/demo`
-    this.setState({ elseTree: immutableTree, config: config });
 
     // const jsonTree = QbUtils.getTree(immutableTree);
     // console.log(jsonTree);
@@ -562,6 +509,7 @@ function ConditionBlock({
   deleteCondition,
   renderBuilder,
   onValueChange,
+  onQueryBuilderChange,
 }) {
   return (
     <div style={{ marginLeft: "10px" }}>
@@ -572,6 +520,7 @@ function ConditionBlock({
         hanldeNesting={hanldeNesting}
         renderBuilder={renderBuilder}
         onValueChange={onValueChange}
+        onQueryBuilderChange={onQueryBuilderChange}
       />
       <ElIfStatement
         statements={conditionBlock.elifStatement}
@@ -580,10 +529,13 @@ function ConditionBlock({
         hanldeNesting={hanldeNesting}
         renderBuilder={renderBuilder}
         onValueChange={onValueChange}
-
+        onQueryBuilderChange={onQueryBuilderChange}
       />
-        
-      <ElseStatement statement={conditionBlock.elseStatement} onValueChange={onValueChange} />
+
+      <ElseStatement
+        statement={conditionBlock.elseStatement}
+        onValueChange={onValueChange}
+      />
     </div>
   );
 }
@@ -595,6 +547,7 @@ function IfStatement({
   deleteCondition,
   renderBuilder,
   onValueChange,
+  onQueryBuilderChange,
 }) {
   console.log(statement);
   const nestedConditionBlock = (statement.conditionBlocks || []).map(
@@ -606,6 +559,7 @@ function IfStatement({
           hanldeNesting={hanldeNesting}
           renderBuilder={renderBuilder}
           onValueChange={onValueChange}
+          onQueryBuilderChange={onQueryBuilderChange}
         />
       );
     }
@@ -635,8 +589,10 @@ function IfStatement({
         </div>
         <Query
           {...config}
-          value={statement.condition}
-          // onChange={this.onChange}
+          value={statement.queryBuilder}
+          onChange={(immutableTree, config) =>
+            onQueryBuilderChange(immutableTree, config, statement.id)
+          }
           renderBuilder={renderBuilder}
         />
         {/* {QbUtils.queryString(this.state.tree, this.state.config) && ( */}
@@ -735,7 +691,8 @@ function ElIfStatement({
   parentID,
   hanldeNesting,
   renderBuilder,
-  onValueChange
+  onValueChange,
+  onQueryBuilderChange,
 }) {
   return statements && statements.length > 0 ? (
     statements.map((statement) => {
@@ -762,8 +719,10 @@ function ElIfStatement({
           </div>
           <Query
             {...config}
-            value={statement.condition}
-            // onChange={this.onChange}
+            value={statement.queryBuilder}
+            onChange={(immutableTree, config) =>
+              onQueryBuilderChange(immutableTree, config, statement.id)
+            }
             renderBuilder={renderBuilder}
           />
           {/* {QbUtils.queryString(this.state.tree, this.state.config) && ( */}
@@ -838,13 +797,17 @@ function ElIfStatement({
                 defaultValue={""}
                 // style={{fontSize: 10}}
 
-                onChange={(event) =>
-                  hanldeNesting(event.target.value, parentID)
-                }
+                onChange={(event) => {
+                  console.log(
+                    event.target.value,
+                    parentID,
+                    statement.id,
+                    "----"
+                  );
+                  hanldeNesting(event.target.value, parentID);
+                }}
               >
-                {/* <MenuItem value={"ifElse"}>
-                Add Nested If Else
-              </MenuItem> */}
+                {/* <MenuItem value={"ifElse"}>Add Nested If Else</MenuItem> */}
                 <MenuItem value={"elseIf"}>Add Else If</MenuItem>
               </Select>
             </FormControl>
@@ -857,7 +820,7 @@ function ElIfStatement({
   );
 }
 
-function ElseStatement({ statement , onValueChange}) {
+function ElseStatement({ statement, onValueChange }) {
   return statement ? (
     <div>
       <div
