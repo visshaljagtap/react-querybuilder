@@ -93,24 +93,24 @@ export default class DemoQueryBuilder extends Component {
         ifStatement: {
           id: uniqueId1,
           condition: QbUtils.checkTree(QbUtils.loadTree(queryValue), config),
-          actionType: "String",
-          actionMessage: "String",
-          cliFix: "string",
+          actionType: "OUTPUT",
+          actionMessage: "",
+          cliFix: "",
           conditionBlocks: [],
         },
         elifStatement: [],
         // {
         //   condition: QbUtils.checkTree(QbUtils.loadTree(queryValue), config),
-        //   actionType: "String",
-        //   actionMessage: "String",
-        //   cliFix: "string",
+        //   actionType: "",
+        //   actionMessage: "",
+        //   cliFix: "",
         //   conditionBlocks: null,
         // },
         elseStatement: {
           id: uniqueId2,
-          actionType: "String",
-          actionMessage: "String",
-          cliFix: "string",
+          actionType: "OUTPUT",
+          actionMessage: "",
+          cliFix: "",
           conditionBlocks: [],
         },
       },
@@ -197,23 +197,23 @@ export default class DemoQueryBuilder extends Component {
           ifStatement: {
             id: uuidv4(),
             condition: QbUtils.checkTree(QbUtils.loadTree(queryValue), config),
-            actionType: "String",
-            actionMessage: "String",
-            cliFix: "string",
+            actionType: "OUTPUT",
+            actionMessage: "",
+            cliFix: "",
             conditionBlocks: [],
           },
           elifStatement: [],
           // {
           //   condition: QbUtils.checkTree(QbUtils.loadTree(queryValue), config),
-          //   actionType: "String",
-          //   actionMessage: "String",
-          //   cliFix: "string",
+          //   actionType: "",
+          //   actionMessage: "",
+          //   cliFix: "",
           //   conditionBlocks: null,
           // },
           elseStatement: {
-            actionType: "String",
-            actionMessage: "String",
-            cliFix: "string",
+            actionType: "OUTPUT",
+            actionMessage: "",
+            cliFix: "",
             conditionBlocks: [],
           },
         },
@@ -288,9 +288,9 @@ export default class DemoQueryBuilder extends Component {
       newObj = {
         id: uuidv4(),
         condition: QbUtils.checkTree(QbUtils.loadTree(queryValue), config),
-        actionType: "String",
-        actionMessage: "String",
-        cliFix: "string",
+        actionType: "OUTPUT",
+        actionMessage: "",
+        cliFix: "",
         conditionBlocks: [],
       };
     } else if (name === "ifElse") {
@@ -299,9 +299,9 @@ export default class DemoQueryBuilder extends Component {
         ifStatement: {
           id: uuidv4(),
           condition: QbUtils.checkTree(QbUtils.loadTree(queryValue), config),
-          actionType: "String",
-          actionMessage: "String",
-          cliFix: "string",
+          actionType: "OUTPUT",
+          actionMessage: "",
+          cliFix: "",
           conditionBlocks: [],
         },
 
@@ -309,9 +309,9 @@ export default class DemoQueryBuilder extends Component {
 
         elseStatement: {
           id: uuidv4(),
-          actionType: "String",
-          actionMessage: "String",
-          cliFix: "string",
+          actionType: "OUTPUT",
+          actionMessage: "",
+          cliFix: "",
           conditionBlocks: [],
         },
       };
@@ -408,7 +408,7 @@ export default class DemoQueryBuilder extends Component {
   };
 
   render = () => (
-    <div style={{ marginLeft: 10 }}>
+    <div>
       {this.state.conditionBlocks &&
         this.state.conditionBlocks.map((value, index) => {
           return (
@@ -437,17 +437,21 @@ export default class DemoQueryBuilder extends Component {
           size="small"
           variant="contained"
           color="primary"
-          onClick={this.generateDSL}
+          onClick={this.submitJSON}
         >
           Submit
         </Button>
       </div>
 
-      <div style={{ marginTop: 20, marginLeft: 30 }}>
-        <b>{this.state.finalOutput}</b>
+      <div style={{ marginTop: 20, fontSize: 12}}>
+        <p>{JSON.stringify(this.state.conditionBlocks)}</p>
       </div>
     </div>
   );
+
+  submitJSON = () =>{
+    console.log(this.state.conditionBlocks);
+  }
 
   generateDSL = () => {
     // console.log(
@@ -518,13 +522,13 @@ export default class DemoQueryBuilder extends Component {
 
   // renderResult = ({tree: immutableTree, config}) => (
   //   <div className="query-builder-result">
-  //       <div>Query string: <pre>{JSON.stringify(QbUtils.queryString(immutableTree, config))}</pre></div>
+  //       <div>Query : <pre>{JSON.stringify(QbUtils.queryString(immutableTree, config))}</pre></div>
   //   </div>
   // )
 
   // renderElseResult = ({elseTree: immutableTree, config}) => (
   //   <div className="query-builder-result">
-  //       <div>Query string: <pre>{JSON.stringify(QbUtils.queryString(immutableTree, config))}</pre></div>
+  //       <div>Query : <pre>{JSON.stringify(QbUtils.queryString(immutableTree, config))}</pre></div>
   //   </div>
   // )
 
@@ -650,8 +654,10 @@ function IfStatement({
             select
             label="Select Action"
             // value={}
-            value={"VIOLATION"}
-            // onChange={handleChange}
+            value={statement.actionType}
+            onChange={(e) =>
+              onValueChange("actionType", e.target.value, statement.id)
+            }
             SelectProps={{
               native: true,
             }}
@@ -775,8 +781,10 @@ function ElIfStatement({
               select
               label="Select Action"
               // value={}
-              value={"VIOLATION"}
-              // onChange={handleChange}
+              value={statement.actionType}
+              onChange={(e) =>
+                onValueChange("actionType", e.target.value, statement.id)
+              }
               SelectProps={{
                 native: true,
               }}
@@ -870,7 +878,10 @@ function ElseStatement({ statement , onValueChange}) {
           label="Select Action"
           value={"VIOLATION"}
           style={{ fontSize: 10 }}
-          // onChange={handleChange}
+          value={statement.actionType}
+          onChange={(e) =>
+            onValueChange("actionType", e.target.value, statement.id)
+          }
           SelectProps={{
             native: true,
           }}
