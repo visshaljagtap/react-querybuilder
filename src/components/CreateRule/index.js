@@ -7,6 +7,7 @@ import Button from '@material-ui/core/Button';
 import Typography from '@material-ui/core/Typography';
 import QueryBuilder from '../QueryBuilder';
 import RuleInputs from './RuleInputs';
+import RuleInfo from './RuleInfo';
 import Platforms from './Platforms';
 
 const useStyles = makeStyles((theme) => ({
@@ -35,11 +36,11 @@ function getSteps() {
 function getStepContent(step) {
   switch (step) {
     case 0:
-        return <div style={{ minHeight: "60vh" }}><RuleInputs /></div>
+        return <div style={{ minHeight: "60vh" }}><RuleInfo /></div>
       case 1:
         return <div style={{ minHeight: "60vh" }}><Platforms /></div>
       case 2:
-        return <div style={{ minHeight: "60vh" }}>Rule Inputs</div>
+        return <div style={{ minHeight: "60vh" }}><RuleInputs /></div>
       case 3:
         return <QueryBuilder />;
       default:

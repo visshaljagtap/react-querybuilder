@@ -1,99 +1,104 @@
-import React from "react";
-import ReactDOM from "react-dom";
-import { useFormik } from "formik";
-import * as yup from "yup";
-import Button from "@material-ui/core/Button";
-import TextField from "@material-ui/core/TextField";
+import * as React from "react";
+import { DataGrid } from "@material-ui/data-grid";
+import EditIcon from "@material-ui/icons/Edit";
+import DeleteIcon from "@material-ui/icons/Delete";
+import { Button } from "@material-ui/core";
+import NewRuleInputs from './NewRuleInputs';
+import Drawer from '@material-ui/core/Drawer';
 
-const validationSchema = yup.object({
-  email: yup
-    .string("Enter your email")
-    .email("Enter a valid email")
-    .required("Email is required"),
-  password: yup
-    .string("Enter your password")
-    .min(8, "Password should be of minimum 8 characters length")
-    .required("Password is required"),
-});
+const columns = [
+  { field: "id", headerName: "ID", width: 70 },
+  { field: "title", headerName: "Title", width: 200 },
+  { field: "datatype", headerName: "Data Type", width: 200 },
+  {
+    field: "description",
+    headerName: "Description",
+    width: 350,
+  },
+  {
+    field: "",
+    headerName: "Action",
+    description: "This column has a value getter and is not sortable.",
+    sortable: false,
+    width: 200,
+    renderCell: (params) => {
+      return (
+        <div style={{ display: "flex" }}>
+          <EditIcon />
+          <DeleteIcon />
+        </div>
+      );
+    },
+    // `${params.getValue('firstName') || ''} ${params.getValue('lastName') || ''}`,
+  },
+];
 
-const RuleInputs = () => {
-  const formik = useFormik({
-    initialValues: {
-      email: "foobar@example.com",
-      password: "foobar",
-    },
-    validationSchema: validationSchema,
-    onSubmit: (values) => {
-      alert(JSON.stringify(values, null, 2));
-    },
-  });
+const rows = [
+  {
+    id: 1,
+    title: "ACL Name 1",
+    datatype: "string",
+    description: "description",
+  },
+  {
+    id: 2,
+    title: "ACL Name 2",
+    datatype: "string",
+    description: "description",
+  },
+  {
+    id: 3,
+    title: "ACL Name 3",
+    datatype: "string",
+    description: "description",
+  },
+  { id: 4, title: "ACL Name 4", datatype: "int", description: "description" },
+  {
+    id: 5,
+    title: "ACL Name 5",
+    datatype: "string",
+    description: "description",
+  },
+  {
+    id: 6,
+    title: "ACL Name 6",
+    datatype: "string",
+    description: "description",
+  },
+  {
+    id: 7,
+    title: "ACL Name 7",
+    datatype: "string",
+    description: "description",
+  },
+];
+
+export default function DataTable() {
+  const [openDrawer, setOpenDrawer] = React.useState(false)
 
   return (
-    <div style={{margin: '0 auto', width: '90%'}}>
-      <form onSubmit={formik.handleSubmit}>
-        <TextField
-        variant="outlined"
-          style={{ marginBottom: 20 }}
-          fullWidth
-          id="email"
-          name="email"
-          label="Rule Title"
-          //   value={formik.values.email}
-          onChange={formik.handleChange}
-          error={formik.touched.email && Boolean(formik.errors.email)}
-          helperText={formik.touched.email && formik.errors.email}
+    <>
+      <div  style={{ marginBottom: 20, textAlign: "right" }}>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={()=>setOpenDrawer(true)}
+        >
+          Add New
+        </Button>
+      </div>
+      <div style={{ height: 300, width: "100%" }}>
+        <DataGrid
+          rows={rows}
+          columns={columns}
+          pageSize={5}
+          checkboxSelection
         />
+      </div>
 
-        <TextField
-        variant="outlined"
-
-          style={{ marginBottom: 20 }}
-          fullWidth
-          id="email"
-          name="email"
-          rows={4}
-          multiline
-          label="Description"
-          //   value={formik.values.email}
-          onChange={formik.handleChange}
-          error={formik.touched.email && Boolean(formik.errors.email)}
-          helperText={formik.touched.email && formik.errors.email}
-        />
-
-        <TextField
-        variant="outlined"
-
-          style={{ marginBottom: 20 }}
-          fullWidth
-          id="email"
-          name="email"
-          label="Impact"
-          //   value={formik.values.email}
-          onChange={formik.handleChange}
-          error={formik.touched.email && Boolean(formik.errors.email)}
-          helperText={formik.touched.email && formik.errors.email}
-        />
-
-        <TextField
-        variant="outlined"
-
-          style={{ marginBottom: 20 }}
-          fullWidth
-          id="email"
-          name="email"
-          label="Suggested Fix"
-          //   value={formik.values.email}
-          onChange={formik.handleChange}
-          error={formik.touched.email && Boolean(formik.errors.email)}
-          helperText={formik.touched.email && formik.errors.email}
-        />
-
-        {/* <Button color="primary" variant="contained" fullWidth type="submit">
-          Submit
-        </Button> */}
-      </form>
-    </div>
+      <Drawer anchor={"right"} open={openDrawer} onClose={()=>setOpenDrawer(false)}>
+           <NewRuleInputs setOpenDrawer={setOpenDrawer} />
+          </Drawer>
+    </>
   );
-};
-
-export default RuleInputs;
+}
