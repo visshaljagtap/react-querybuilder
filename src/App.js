@@ -1,12 +1,16 @@
 import * as React from "react";
 import { SampleBase } from "./sample-base";
 import  CreateRule from '../src/components/CreateRule';
+import { MuiPickersUtilsProvider } from '@material-ui/pickers';
 
-// import './default.css';
+// pick a date util library
+import DateFnsUtils from '@date-io/date-fns';
+
 export class App extends SampleBase {
   render() {
     return (
-     <div><CreateRule /></div>
+      <MuiPickersUtilsProvider utils={DateFnsUtils}>
+      <CreateRule /></MuiPickersUtilsProvider >
     );
   }
 }
